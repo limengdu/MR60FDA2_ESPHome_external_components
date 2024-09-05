@@ -1,0 +1,149 @@
+esphome:
+  name: esp32c6-test
+  friendly_name: esp32c6-test
+  platformio_options:
+    board_upload.maximum_size: 4194304
+  min_version: "2024.3.2" # Fix logger compile error on ESP32-C6 esphome#6323
+
+esp32:
+  board: esp32-c6-devkitc-1
+  variant: esp32c6
+  flash_size: 4MB # upload.flash_size
+  framework:
+    type: esp-idf
+    platform_version: 6.5.0 # Need at least 6.4 for ESP32-C6
+
+    # Tasmota's release of 5.1.3 works, first-party release does not LOL
+    version: 5.1.3
+    source: https://github.com/tasmota/esp-idf/releases/download/v5.1.3.240325/esp-idf-v5.1.3.zip
+
+    # Fix flash size by ensuring IDF flash size is also set (was defaulting to 2MB?!?)
+    # See https://github.com/esphome/issues/issues/5404
+    sdkconfig_options:
+      CONFIG_ESPTOOLPY_FLASHSIZE_4MB: y
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/ssieb/esphome
+      ref: adc
+    components: [ adc ]
+    refresh: 1min
+  - source: github://limengdu/mmwave-kit-external-components@main
+    refresh: 0s
+
+# Enable logging
+logger:
+  level: VERBOSE
+
+# Enable Home Assistant API
+api:
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "seeedstudio-mr60fda2"
+
+# light:
+#   - platform: status_led
+#     name: "Switch state"
+#     pin: GPIO15
+
+uart:
+  id: uart_bus
+  baud_rate: 115200
+  rx_pin: 4
+  tx_pin: 5
+  parity: NONE
+  stop_bits: 1
+
+seeed_mr24hpc1:
+  id: my_seeed_mr24hpc1
+
+text_sensor:
+  - platform: seeed_mr24hpc1
+    heart_beat:
+      name: "Heartbeat"
+    product_model:
+      name: "Product Model"
+    product_id:
+      name: "Product ID"
+    hardware_model:
+      name: "Hardware Model"
+    hardware_version:
+      name: "Hardware Version"
+    keep_away:
+      name: "Active Reporting Of Proximity"
+    motion_status:
+      name: "Motion Information"
+    custom_mode_end:
+      name: "Custom Mode Status"
+
+binary_sensor:
+  - platform: seeed_mr24hpc1
+    has_target:
+      name: "Presence Information"
+
+sensor:
+  - platform: seeed_mr24hpc1
+    custom_presence_of_detection:
+      name: "Static Distance"
+    movement_signs:
+      name: "Body Movement Parameter"
+    custom_motion_distance:
+      name: "Motion Distance"
+    custom_spatial_static_value:
+      name: "Existence Energy"
+    custom_spatial_motion_value:
+      name: "Motion Energy"
+    custom_motion_speed:
+      name: "Motion Speed"
+    custom_mode_num:
+      name: "Current Custom Mode"
+
+switch:
+  - platform: seeed_mr24hpc1
+    underly_open_function:
+      name: Underlying Open Function Info Output Switch
+
+button:
+  - platform: seeed_mr24hpc1
+    restart:
+      name: "Module Restart"
+    custom_set_end:
+      name: "End Of Custom Mode Settings"
+
+select:
+  - platform: seeed_mr24hpc1
+    scene_mode:
+      name: "Scene"
+    unman_time:
+      name: "Time For Entering No Person State (Standard Function)"
+    existence_boundary:
+      name: "Existence Boundary"
+    motion_boundary:
+      name: "Motion Boundary"
+
+number:
+  - platform: seeed_mr24hpc1
+    sensitivity:
+      name: "Sensitivity"
+    custom_mode:
+      name: "Custom Mode"
+    existence_threshold:
+      name: "Existence Energy Threshold"
+    motion_threshold:
+      name: "Motion Energy Threshold"
+    motion_trigger:
+      name: "Motion Trigger Time"
+    motion_to_rest:
+      name: "Motion To Rest Time"
+    custom_unman_time:
+      name: "Time For Entering No Person State (Underlying Open Function)"
+
