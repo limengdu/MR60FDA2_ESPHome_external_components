@@ -1,4 +1,4 @@
-#include "install_height_select.h"
+#include "height_threshold_select.h"
 
 namespace esphome {
 namespace seeed_mr60fda2 {

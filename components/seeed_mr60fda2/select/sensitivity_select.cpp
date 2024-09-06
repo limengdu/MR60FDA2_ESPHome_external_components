@@ -1,4 +1,4 @@
-#include "install_height_select.h"
+#include "sensitivity_select.h"
 
 namespace esphome {
 namespace seeed_mr60fda2 {

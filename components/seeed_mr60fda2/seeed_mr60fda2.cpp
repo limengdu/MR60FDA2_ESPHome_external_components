@@ -20,9 +20,9 @@ void MR60FDA2Component::dump_config() {
   LOG_BUTTON(" ", "Get Radar Parameters Button", this->get_radar_parameters_button_);
 #endif
 #ifdef USE_SELECT
-  LOG_SELECT(" ", "Set Install Height Select", this->install_height_select_);
-  LOG_SELECT(" ", "Set Height Threshold Select", this->height_threshold_select_);
-  LOG_SELECT(" ", "Set Sensitivity Select", this->sensitivity_select_);
+  LOG_SELECT(" ", "Install Height Select", this->install_height_select_);
+  LOG_SELECT(" ", "Height Threshold Select", this->height_threshold_select_);
+  LOG_SELECT(" ", "Sensitivity Select", this->sensitivity_select_);
 #endif
 }
 
@@ -34,7 +34,7 @@ void MR60FDA2Component::setup() {
   this->current_frame_locate_ = LOCATE_FRAME_HEADER;
   this->current_frame_id_ = 0;
   this->current_frame_len_ = 0;
-  this->data_frame_len_ = 0;
+  this->current_data_frame_len_ = 0;
   this->current_frame_type_ = 0;
 
   memset(this->current_frame_buf, 0, FRAME_BUF_MAX_SIZE);

@@ -56,9 +56,9 @@ class MR60FDA2Component : public Component,
   SUB_BUTTON(get_radar_parameters)
 #endif
 #ifdef USE_SELECT
-  SUB_SELECT(set_install_height)
-  SUB_SELECT(set_height_threshold)
-  SUB_SELECT(set_sensitivity)
+  SUB_SELECT(install_height)
+  SUB_SELECT(height_threshold)
+  SUB_SELECT(sensitivity)
 #endif
 
  protected:
