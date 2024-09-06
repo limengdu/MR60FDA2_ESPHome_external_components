@@ -28,7 +28,7 @@ void MR60FDA2Component::dump_config() {
 
 // Initialisation functions
 void MR60FDA2Component::setup() {
-  ESP_LOGCONFIG(TAG, "uart_settings is 115200");
+  ESP_LOGCONFIG(TAG, "Setting up MR60FDA2...");
   this->check_uart_settings(115200);
 
   this->current_frame_locate_ = LOCATE_FRAME_HEADER;
@@ -38,7 +38,7 @@ void MR60FDA2Component::setup() {
   this->current_frame_type_ = 0;
 
   memset(this->current_frame_buf, 0, FRAME_BUF_MAX_SIZE);
-  memset(this->current_data_buf, 0, FRAME_BUF_MAX_SIZE);
+  memset(this->current_data_buf, 0, DATA_BUF_MAX_SIZE);
 }
 
 // main loop
