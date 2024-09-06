@@ -26,4 +26,4 @@ async def to_code(config):
     if get_radar_parameters_config := config.get(CONF_GET_RADAR_PARAMETERS):
         b = await button.new_button(get_radar_parameters_config)
         await cg.register_parented(b, config[CONF_MR60FDA2_ID])
-        cg.add(mr60fda2_component.set_restart_button(b))
+        cg.add(mr60fda2_component.set_get_radar_parameters_button(b))
