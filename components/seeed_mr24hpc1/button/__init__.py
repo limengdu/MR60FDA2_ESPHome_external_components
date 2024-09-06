@@ -2,41 +2,28 @@ import esphome.codegen as cg
 from esphome.components import button
 import esphome.config_validation as cv
 from esphome.const import (
-    DEVICE_CLASS_RESTART,
-    ENTITY_CATEGORY_CONFIG,
-    ICON_RESTART_ALERT,
+    DEVICE_CLASS_UPDATE,
+    ENTITY_CATEGORY_NONE,
 )
-from .. import CONF_MR24HPC1_ID, MR24HPC1Component, mr24hpc1_ns
+from .. import CONF_MR60FDA2_ID, MR60FDA2Component, mr60fda2_ns
 
-RestartButton = mr24hpc1_ns.class_("RestartButton", button.Button)
-CustomSetEndButton = mr24hpc1_ns.class_("CustomSetEndButton", button.Button)
+GetRadarParametersButton = mr60fda2_ns.class_("GetRadarParametersButton", button.Button)
 
-CONF_RESTART = "restart"
-CONF_CUSTOM_SET_END = "custom_set_end"
+CONF_GET_RADAR_PARAMETERS = "get_radar_parameters"
 
 CONFIG_SCHEMA = {
-    cv.GenerateID(CONF_MR24HPC1_ID): cv.use_id(MR24HPC1Component),
-    cv.Optional(CONF_RESTART): button.button_schema(
-        RestartButton,
-        device_class=DEVICE_CLASS_RESTART,
-        entity_category=ENTITY_CATEGORY_CONFIG,
-        icon=ICON_RESTART_ALERT,
-    ),
-    cv.Optional(CONF_CUSTOM_SET_END): button.button_schema(
-        CustomSetEndButton,
-        entity_category=ENTITY_CATEGORY_CONFIG,
-        icon="mdi:cog",
+    cv.GenerateID(CONF_MR60FDA2_ID): cv.use_id(MR60FDA2Component),
+    cv.Optional(CONF_GET_RADAR_PARAMETERS): button.button_schema(
+        GetRadarParametersButton,
+        device_class=DEVICE_CLASS_UPDATE,
+        entity_category=ENTITY_CATEGORY_NONE,
     ),
 }
 
 
 async def to_code(config):
-    mr24hpc1_component = await cg.get_variable(config[CONF_MR24HPC1_ID])
-    if restart_config := config.get(CONF_RESTART):
-        b = await button.new_button(restart_config)
-        await cg.register_parented(b, config[CONF_MR24HPC1_ID])
-        cg.add(mr24hpc1_component.set_restart_button(b))
-    if custom_set_end_config := config.get(CONF_CUSTOM_SET_END):
-        b = await button.new_button(custom_set_end_config)
-        await cg.register_parented(b, config[CONF_MR24HPC1_ID])
-        cg.add(mr24hpc1_component.set_custom_set_end_button(b))
+    mr60fda2_component = await cg.get_variable(config[CONF_MR60FDA2_ID])
+    if get_radar_parameters_config := config.get(CONF_GET_RADAR_PARAMETERS):
+        b = await button.new_button(get_radar_parameters_config)
+        await cg.register_parented(b, config[CONF_MR60FDA2_ID])
+        cg.add(mr60fda2_component.set_restart_button(b))
