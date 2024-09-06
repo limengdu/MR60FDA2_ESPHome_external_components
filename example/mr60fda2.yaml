@@ -62,8 +62,8 @@ wifi:
 uart:
   id: uart_bus
   baud_rate: 115200
-  rx_pin: 4
-  tx_pin: 5
+  rx_pin: 17
+  tx_pin: 16
   parity: NONE
   stop_bits: 1
 
