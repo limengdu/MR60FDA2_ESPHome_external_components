@@ -20,9 +20,9 @@ void MR60FDA2Component::dump_config() {
   LOG_BUTTON(" ", "Get Radar Parameters Button", this->get_radar_parameters_button_);
 #endif
 #ifdef USE_SELECT
-  LOG_SELECT(" ", "Set Install Height Select", this->set_install_height_select_);
-  LOG_SELECT(" ", "Set Height Threshold Select", this->set_height_threshold_select_);
-  LOG_SELECT(" ", "Set Sensitivity Select", this->set_sensitivity_select_);
+  LOG_SELECT(" ", "Set Install Height Select", this->install_height_select_);
+  LOG_SELECT(" ", "Set Height Threshold Select", this->height_threshold_select_);
+  LOG_SELECT(" ", "Set Sensitivity Select", this->sensitivity_select_);
 #endif
 }
 

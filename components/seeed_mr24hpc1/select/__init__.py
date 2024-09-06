@@ -4,100 +4,55 @@ import esphome.config_validation as cv
 from esphome.const import (
     ENTITY_CATEGORY_CONFIG,
 )
-from .. import CONF_MR24HPC1_ID, MR24HPC1Component, mr24hpc1_ns
+from .. import CONF_MR60FDA2_ID, MR60FDA2Component, mr60fda2_ns
 
-SceneModeSelect = mr24hpc1_ns.class_("SceneModeSelect", select.Select)
-UnmanTimeSelect = mr24hpc1_ns.class_("UnmanTimeSelect", select.Select)
-ExistenceBoundarySelect = mr24hpc1_ns.class_("ExistenceBoundarySelect", select.Select)
-MotionBoundarySelect = mr24hpc1_ns.class_("MotionBoundarySelect", select.Select)
+InstallHeightSelect = mr60fda2_ns.class_("InstallHeightSelect", select.Select)
+HeightThresholdSelect = mr60fda2_ns.class_("HeightThresholdSelect", select.Select)
+SensitivitySelect = mr60fda2_ns.class_("SensitivitySelect", select.Select)
 
-CONF_SCENE_MODE = "scene_mode"
-CONF_UNMAN_TIME = "unman_time"
-CONF_EXISTENCE_BOUNDARY = "existence_boundary"
-CONF_MOTION_BOUNDARY = "motion_boundary"
+CONF_INSTALL_HEIGHT = "install_height"
+CONF_HEIGHT_THRESHOLD = "height_threshold"
+CONF_SENSITIVITY = "sensitivity"
 
 CONFIG_SCHEMA = {
-    cv.GenerateID(CONF_MR24HPC1_ID): cv.use_id(MR24HPC1Component),
-    cv.Optional(CONF_SCENE_MODE): select.select_schema(
-        SceneModeSelect,
+    cv.GenerateID(CONF_MR60FDA2_ID): cv.use_id(MR60FDA2Component),
+    cv.Optional(CONF_INSTALL_HEIGHT): select.select_schema(
+        InstallHeightSelect,
         entity_category=ENTITY_CATEGORY_CONFIG,
-        icon="mdi:hoop-house",
+        icon="mdi:axis-arrow",
     ),
-    cv.Optional(CONF_UNMAN_TIME): select.select_schema(
-        UnmanTimeSelect,
+    cv.Optional(CONF_HEIGHT_THRESHOLD): select.select_schema(
+        HeightThresholdSelect,
         entity_category=ENTITY_CATEGORY_CONFIG,
-        icon="mdi:timeline-clock",
+        icon="mdi:axis-y-arrow",
     ),
-    cv.Optional(CONF_EXISTENCE_BOUNDARY): select.select_schema(
-        ExistenceBoundarySelect,
-        entity_category=ENTITY_CATEGORY_CONFIG,
-    ),
-    cv.Optional(CONF_MOTION_BOUNDARY): select.select_schema(
-        MotionBoundarySelect,
+    cv.Optional(CONF_SENSITIVITY): select.select_schema(
+        SensitivitySelect,
         entity_category=ENTITY_CATEGORY_CONFIG,
     ),
 }
 
 
 async def to_code(config):
-    mr24hpc1_component = await cg.get_variable(config[CONF_MR24HPC1_ID])
-    if scenemode_config := config.get(CONF_SCENE_MODE):
+    mr60fda2_component = await cg.get_variable(config[CONF_MR60FDA2_ID])
+    if install_height_config := config.get(CONF_INSTALL_HEIGHT):
         s = await select.new_select(
-            scenemode_config,
-            options=["None", "Living Room", "Bedroom", "Washroom", "Area Detection"],
+            install_height_config,
+            options=["2.4m", "2.5m", "2.6m", "2.7m", "2.8m", "2.9m", "3.0m"],
         )
-        await cg.register_parented(s, config[CONF_MR24HPC1_ID])
-        cg.add(mr24hpc1_component.set_scene_mode_select(s))
-    if unmantime_config := config.get(CONF_UNMAN_TIME):
+        await cg.register_parented(s, config[CONF_MR60FDA2_ID])
+        cg.add(mr60fda2_component.set_install_height_select(s))
+    if height_threshold_config := config.get(CONF_HEIGHT_THRESHOLD):
         s = await select.new_select(
-            unmantime_config,
-            options=[
-                "None",
-                "10s",
-                "30s",
-                "1min",
-                "2min",
-                "5min",
-                "10min",
-                "30min",
-                "60min",
-            ],
+            height_threshold_config,
+            options=["0.0m", "0.1m", "0.2m", "0.3m", "0.4m", "0.5m", "0.6m"],
         )
-        await cg.register_parented(s, config[CONF_MR24HPC1_ID])
-        cg.add(mr24hpc1_component.set_unman_time_select(s))
-    if existence_boundary_config := config.get(CONF_EXISTENCE_BOUNDARY):
+        await cg.register_parented(s, config[CONF_MR60FDA2_ID])
+        cg.add(mr60fda2_component.set_height_threshold_select(s))
+    if sensitivity_config := config.get(CONF_SENSITIVITY):
         s = await select.new_select(
-            existence_boundary_config,
-            options=[
-                "0.5m",
-                "1.0m",
-                "1.5m",
-                "2.0m",
-                "2.5m",
-                "3.0m",
-                "3.5m",
-                "4.0m",
-                "4.5m",
-                "5.0m",
-            ],
+            sensitivity_config,
+            options=["1", "2", "3"],
         )
-        await cg.register_parented(s, config[CONF_MR24HPC1_ID])
-        cg.add(mr24hpc1_component.set_existence_boundary_select(s))
-    if motion_boundary_config := config.get(CONF_MOTION_BOUNDARY):
-        s = await select.new_select(
-            motion_boundary_config,
-            options=[
-                "0.5m",
-                "1.0m",
-                "1.5m",
-                "2.0m",
-                "2.5m",
-                "3.0m",
-                "3.5m",
-                "4.0m",
-                "4.5m",
-                "5.0m",
-            ],
-        )
-        await cg.register_parented(s, config[CONF_MR24HPC1_ID])
-        cg.add(mr24hpc1_component.set_motion_boundary_select(s))
+        await cg.register_parented(s, config[CONF_MR60FDA2_ID])
+        cg.add(mr60fda2_component.set_sensitivity_select(s))
