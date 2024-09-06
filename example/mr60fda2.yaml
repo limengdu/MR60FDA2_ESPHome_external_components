@@ -29,7 +29,11 @@ external_components:
       ref: adc
     components: [ adc ]
     refresh: 1min
-  - source: github://limengdu/MR60FDA2_ESPHome_external_components@main
+  - source:
+      type: git
+      url: https://github.com/limengdu/MR60FDA2_ESPHome_external_components
+      ref: main
+    components: [ seeed_mr60fda2 ]
     refresh: 0s
 
 # Enable logging
