@@ -46,9 +46,11 @@ void MR60FDA2Component::setup() {
 // main loop
 void MR60FDA2Component::loop() {
   uint8_t byte;
+  // uint8_t array[7];
 
   // Is there data on the serial port
   while (this->available()) {
+    // this->read_array(&array, 7)
     this->read_byte(&byte);
     this->splitFrame(byte);  // split data frame
   }
@@ -160,10 +162,9 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
       if (this->validateChecksum(this->current_frame_buf, this->current_frame_len_,
                                  this->current_frame_buf[current_frame_len_ - 1])) {
         this->current_frame_locate_++;
-        // ESP_LOGD(TAG, "%x", this->current_frame_buf[this->current_frame_len_ - 1]);
-        // ESP_LOGD(TAG, "8");
+        ESP_LOGD(TAG, "GET HEAD_CKSUM_FRAME: %x%x", this->current_frame_buf[this->current_frame_len_ - 2], this->current_frame_buf[this->current_frame_len_ - 1]);
       } else {
-        // ESP_LOGD(TAG, "HEAD_CKSUM_FRAME ERROR: %x", this->current_frame_buf[this->current_frame_len_ - 1]);
+        ESP_LOGD(TAG, "HEAD_CKSUM_FRAME ERROR: %x%x", this->current_frame_buf[this->current_frame_len_ - 2], this->current_frame_buf[this->current_frame_len_ - 1]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -176,7 +177,7 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         // ESP_LOGD(TAG, "9");
       }
       if (this->current_frame_len_ > FRAME_BUF_MAX_SIZE) {
-        // ESP_LOGD(TAG, "PRACTICE_DATA_FRAME_LEN ERROR: %d", this->current_frame_len_ - HEAD_CKSUM_LEN);
+        ESP_LOGD(TAG, "PRACTICE_DATA_FRAME_LEN ERROR: %d", this->current_frame_len_ - HEAD_CKSUM_LEN);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -190,7 +191,7 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         // ESP_LOGD(TAG, "%x", this->current_frame_buf[this->current_frame_len_ - 1]);
         // ESP_LOGD(TAG, "10");
       } else {
-        // ESP_LOGD(TAG, "DATA_CKSUM_FRAME ERROR: %x", this->current_frame_buf[current_frame_len_ - 1]);
+        ESP_LOGD(TAG, "DATA_CKSUM_FRAME ERROR: %x", this->current_frame_buf[current_frame_len_ - 1]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
