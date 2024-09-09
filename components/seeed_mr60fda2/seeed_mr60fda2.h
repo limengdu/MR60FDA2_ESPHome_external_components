@@ -49,9 +49,9 @@ enum FrameLocation {
   LOCATE_PROCESS_FRAME,
 };
 
-static const char *const INSTALL_HEIGHT[7] = {"2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0"};
-static const char *const HEIGHT_THRESHOLD[7] = {"0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6"};
-static const char *const SENSITIVITY[3] = {"1", "2", "3"};
+static const float INSTALL_HEIGHT[7] = {2.4f, 2.5f, 2.6f, 2.7f, 2.8f, 2.9f, 3.0f};
+static const float HEIGHT_THRESHOLD[7] = {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f};
+static const uint8_t SENSITIVITY[3] = {1, 2, 3};
 
 class MR60FDA2Component : public Component,
                           public uart::UARTDevice {  // The class name must be the name defined by text_sensor.py
@@ -78,7 +78,7 @@ class MR60FDA2Component : public Component,
   size_t current_frame_len_;
   size_t current_data_frame_len_;
   uint16_t current_frame_type_;
-  uint32_t current_intall_height_;
+  uint32_t current_install_height_;
   uint32_t current_height_threshold_;
   uint32_t current_sensitivity_;
 
@@ -89,17 +89,17 @@ class MR60FDA2Component : public Component,
   void send_query_(uint8_t *query, size_t string_length);
   void float_to_bytes(float value, unsigned char *bytes);
   void int_to_bytes(uint32_t value, unsigned char *bytes);
-  void set_install_height(uint8_t index);
-  void get_radar_params();
-  void reset_radar();
-  void set_height_threshold(uint8_t index);
-  void set_sensitivity(uint8_t index);
 
  public:
   float get_setup_priority() const override { return esphome::setup_priority::LATE; }
   void setup() override;
   void dump_config() override;
   void loop() override;
+  void set_install_height(uint8_t index);
+  void get_radar_params();
+  void reset_radar();
+  void set_height_threshold(uint8_t index);
+  void set_sensitivity(uint8_t index);
 };
 
 }  // namespace seeed_mr60fda2

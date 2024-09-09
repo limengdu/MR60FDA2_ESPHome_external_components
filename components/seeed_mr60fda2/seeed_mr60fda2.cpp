@@ -38,7 +38,7 @@ void MR60FDA2Component::setup() {
   this->current_frame_len_ = 0;
   this->current_data_frame_len_ = 0;
   this->current_frame_type_ = 0;
-  this->current_intall_height_ = 0;
+  this->current_install_height_ = 0;
   this->current_height_threshold_ = 0;
   this->current_sensitivity_ = 0;
 
