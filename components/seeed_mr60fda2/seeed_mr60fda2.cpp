@@ -39,6 +39,8 @@ void MR60FDA2Component::setup() {
 
   memset(this->current_frame_buf, 0, FRAME_BUF_MAX_SIZE);
   memset(this->current_data_buf, 0, DATA_BUF_MAX_SIZE);
+
+  ESP_LOGCONFIG(TAG, "Set up MR60FDA2 complete");
 }
 
 // main loop
@@ -97,7 +99,7 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         ESP_LOGD(TAG, "1");
       } else {
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
-        // ESP_LOGD(TAG, "FRAME_HEADER_BUFFER ERROR buffer:%x", buffer);
+        ESP_LOGD(TAG, "FRAME_HEADER_BUFFER ERROR buffer:%x", buffer);
       }
       break;
     case LOCATE_ID_FRAME1:

@@ -67,7 +67,7 @@ class MR60FDA2Component : public Component,
   uint8_t current_data_buf[DATA_BUF_MAX_SIZE];
   size_t current_frame_len_;
   uint16_t current_frame_id_;
-  uint16_t current_data_frame_len_;
+  size_t current_data_frame_len_;
   uint16_t current_frame_type_;
 
   bool validateChecksum(const uint8_t *data, size_t len, uint8_t expected_checksum);
