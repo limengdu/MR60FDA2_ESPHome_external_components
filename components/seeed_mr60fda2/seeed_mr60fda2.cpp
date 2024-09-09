@@ -205,12 +205,14 @@ void MR60FDA2Component::processFrame() {
     case IS_FALL_TYPE_BUFFER:
       if (this->is_fall_binary_sensor_ != nullptr) {
         this->is_fall_binary_sensor_->publish_state(this->current_frame_buf[HEAD_CKSUM_LEN]);
+        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
         ESP_LOGD(TAG, "Succeed get fall info");
       }
       break;
     case PEOPLE_EXIST_TYPE_BUFFER:
       if (this->people_exist_binary_sensor_ != nullptr) {
         this->people_exist_binary_sensor_->publish_state(this->current_frame_buf[HEAD_CKSUM_LEN]);
+        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
         ESP_LOGD(TAG, "Succeed get people exist info");
       }
       break;
