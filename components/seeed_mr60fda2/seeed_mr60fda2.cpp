@@ -13,7 +13,6 @@ static const char *const TAG = "seeed_mr60fda2";
 void MR60FDA2Component::dump_config() {
   ESP_LOGCONFIG(TAG, "MR60FDA2:");
 #ifdef USE_BINARY_SENSOR
-  LOG_BINARY_SENSOR(" ", "Is Fall Binary Sensor", this->is_fall_binary_sensor_);
   LOG_BINARY_SENSOR(" ", "People Exist Binary Sensor", this->people_exist_binary_sensor_);
 #endif
 #ifdef USE_BUTTON
@@ -23,6 +22,9 @@ void MR60FDA2Component::dump_config() {
   LOG_SELECT(" ", "Install Height Select", this->install_height_select_);
   LOG_SELECT(" ", "Height Threshold Select", this->height_threshold_select_);
   LOG_SELECT(" ", "Sensitivity Select", this->sensitivity_select_);
+#endif
+#ifdef USE_TEXT_SENSOR
+  LOG_TEXT_SENSOR(" ", "Is Fall Text Sensor", this->is_fall_text_sensor_);
 #endif
 }
 
@@ -215,8 +217,13 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
 void MR60FDA2Component::processFrame() {
   switch (this->current_frame_type_) {
     case IS_FALL_TYPE_BUFFER:
-      if (this->is_fall_binary_sensor_ != nullptr) {
-        this->is_fall_binary_sensor_->publish_state(this->current_frame_buf[LEN_TO_HEAD_CKSUM]);
+      if (this->is_fall_text_sensor_ != nullptr) {
+        if (this->current_frame_buf[LEN_TO_HEAD_CKSUM] == 0) {
+          this->is_fall_text_sensor_->publish_state("Normal");
+        }
+        else if (this->current_frame_buf[LEN_TO_HEAD_CKSUM] == 1) {
+          this->is_fall_text_sensor_->publish_state("Falling");
+        }
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
         ESP_LOGD(TAG, "Succeed get fall info");
       }

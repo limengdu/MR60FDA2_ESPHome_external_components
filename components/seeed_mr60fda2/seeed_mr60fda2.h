@@ -10,6 +10,9 @@
 #ifdef USE_SELECT
 #include "esphome/components/select/select.h"
 #endif
+#ifdef USE_TEXT_SENSOR
+#include "esphome/components/text_sensor/text_sensor.h"
+#endif
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/automation.h"
 #include "esphome/core/helpers.h"
@@ -50,7 +53,6 @@ class MR60FDA2Component : public Component,
                           public uart::UARTDevice {  // The class name must be the name defined by text_sensor.py
 #ifdef USE_BINARY_SENSOR
   SUB_BINARY_SENSOR(is_fall)
-  SUB_BINARY_SENSOR(people_exist)
 #endif
 #ifdef USE_BUTTON
   SUB_BUTTON(get_radar_parameters)
@@ -59,6 +61,9 @@ class MR60FDA2Component : public Component,
   SUB_SELECT(install_height)
   SUB_SELECT(height_threshold)
   SUB_SELECT(sensitivity)
+#endif
+#ifdef USE_TEXT_SENSOR
+  SUB_TEXT_SENSOR(is_fall)
 #endif
 
  protected:
