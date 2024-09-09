@@ -3,7 +3,7 @@ from esphome.components import binary_sensor
 import esphome.config_validation as cv
 from esphome.const import (
     DEVICE_CLASS_OCCUPANCY,
-    DEVICE_CLASS_SAFETY,
+    DEVICE_CLASS_EMPTY,
 )
 from . import CONF_MR60FDA2_ID, MR60FDA2Component
 
@@ -14,7 +14,7 @@ CONF_PEOPLE_EXIST = "people_exist"
 CONFIG_SCHEMA = {
     cv.GenerateID(CONF_MR60FDA2_ID): cv.use_id(MR60FDA2Component),
     cv.Optional(CONF_IS_FALL): binary_sensor.binary_sensor_schema(
-        device_class=DEVICE_CLASS_SAFETY, icon="mdi:security"
+        device_class=DEVICE_CLASS_EMPTY, icon="mdi:security"
     ),
     cv.Optional(CONF_PEOPLE_EXIST): binary_sensor.binary_sensor_schema(
         device_class=DEVICE_CLASS_OCCUPANCY, icon="mdi:motion-sensor"
