@@ -60,6 +60,7 @@ class MR60FDA2Component : public Component,
 #endif
 #ifdef USE_BUTTON
   SUB_BUTTON(get_radar_parameters)
+  SUB_BUTTON(reset_radar)
 #endif
 #ifdef USE_SELECT
   SUB_SELECT(install_height)

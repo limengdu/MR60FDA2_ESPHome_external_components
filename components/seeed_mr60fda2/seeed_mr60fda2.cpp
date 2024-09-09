@@ -17,6 +17,7 @@ void MR60FDA2Component::dump_config() {
 #endif
 #ifdef USE_BUTTON
   LOG_BUTTON(" ", "Get Radar Parameters Button", this->get_radar_parameters_button_);
+  LOG_BUTTON(" ", "Reset Radar Button", this->reset_radar_button_);
 #endif
 #ifdef USE_SELECT
   LOG_SELECT(" ", "Install Height Select", this->install_height_select_);
