@@ -4,7 +4,7 @@ namespace esphome {
 namespace seeed_mr60fda2 {
 
 void GetRadarParametersButton::press_action() {
-    //this->parent_->set_custom_end_mode();
+    this->get_radar_params();
 }
 
 }  // namespace seeed_mr60fda2

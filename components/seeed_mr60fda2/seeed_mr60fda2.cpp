@@ -38,6 +38,9 @@ void MR60FDA2Component::setup() {
   this->current_frame_len_ = 0;
   this->current_data_frame_len_ = 0;
   this->current_frame_type_ = 0;
+  this->current_intall_height_ = 0;
+  this->current_height_threshold_ = 0;
+  this->current_sensitivity_ = 0;
 
   memset(this->current_frame_buf, 0, FRAME_BUF_MAX_SIZE);
   memset(this->current_data_buf, 0, DATA_BUF_MAX_SIZE);
@@ -142,15 +145,18 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
     case LOCATE_TYPE_FRAME2:
       this->current_frame_type_ += buffer;
       if ((this->current_frame_type_ == IS_FALL_TYPE_BUFFER) ||
-          (this->current_frame_type_ == PEOPLE_EXIST_TYPE_BUFFER)) {
+          (this->current_frame_type_ == PEOPLE_EXIST_TYPE_BUFFER) ||
+          (this->current_frame_type_ == RUSULT_INSTALL_HEIGHT) || (this->current_frame_type_ == RUSULT_PARAMETERS) ||
+          (this->current_frame_type_ == RUSULT_HEIGHT_THRESHOLD) || (this->current_frame_type_ == RUSULT_SENSITIVITY)) {
         this->current_frame_len_++;
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
         // ESP_LOGD(TAG, "GET CURRENT_FRAME_TYPE: 0x%02x 0x%02x", this->current_frame_buf[this->current_frame_len_ - 2],
         //          this->current_frame_buf[this->current_frame_len_ - 1]);
       } else {
-        ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: 0x%02x 0x%02x", this->current_frame_buf[this->current_frame_len_
-        - 2], this->current_frame_buf[this->current_frame_len_ - 1]);
+        ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: 0x%02x 0x%02x",
+                 this->current_frame_buf[this->current_frame_len_ - 2],
+                 this->current_frame_buf[this->current_frame_len_ - 1]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -170,8 +176,7 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
                  this->current_frame_buf[this->current_frame_len_ - 4],
                  this->current_frame_buf[this->current_frame_len_ - 3],
                  this->current_frame_buf[this->current_frame_len_ - 2],
-                 this->current_frame_buf[this->current_frame_len_ - 1],
-                 buffer);
+                 this->current_frame_buf[this->current_frame_len_ - 1], buffer);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -204,8 +209,7 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
                  this->current_frame_buf[this->current_frame_len_ - 4],
                  this->current_frame_buf[this->current_frame_len_ - 3],
                  this->current_frame_buf[this->current_frame_len_ - 2],
-                 this->current_frame_buf[this->current_frame_len_ - 1],
-                 buffer);
+                 this->current_frame_buf[this->current_frame_len_ - 1], buffer);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -220,37 +224,133 @@ void MR60FDA2Component::processFrame() {
       if (this->is_fall_text_sensor_ != nullptr) {
         if (this->current_frame_buf[LEN_TO_HEAD_CKSUM] == 0) {
           this->is_fall_text_sensor_->publish_state("Normal");
-        }
-        else if (this->current_frame_buf[LEN_TO_HEAD_CKSUM] == 1) {
+        } else if (this->current_frame_buf[LEN_TO_HEAD_CKSUM] == 1) {
           this->is_fall_text_sensor_->publish_state("Falling");
         }
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
-        ESP_LOGD(TAG, "Succeed get fall info");
+        ESP_LOGD(TAG, "Successful get fall info");
       }
       break;
     case PEOPLE_EXIST_TYPE_BUFFER:
       if (this->people_exist_binary_sensor_ != nullptr) {
         this->people_exist_binary_sensor_->publish_state(this->current_frame_buf[LEN_TO_HEAD_CKSUM]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
-        ESP_LOGD(TAG, "Succeed get people exist info");
+        ESP_LOGD(TAG, "Successful get people exist info");
       }
+      break;
+    case RUSULT_INSTALL_HEIGHT:
+      if (this->current_data_buf[0])
+        ESP_LOGD(TAG, "Successfully set the mounting height");
+      else
+        ESP_LOGD(TAG, "Failed to set the mounting height");
+      break;
+    case RUSULT_PARAMETERS:
+      this->current_install_height_ =
+          (static_cast<uint32_t>(current_data_buf[3]) << 24) | (static_cast<uint32_t>(current_data_buf[2]) << 16) |
+          (static_cast<uint32_t>(current_data_buf[1]) << 8) | static_cast<uint32_t>(current_data_buf[0]);
+      this->current_height_threshold_ =
+          (static_cast<uint32_t>(current_data_buf[7]) << 24) | (static_cast<uint32_t>(current_data_buf[6]) << 16) |
+          (static_cast<uint32_t>(current_data_buf[5]) << 8) | static_cast<uint32_t>(current_data_buf[4]);
+      this->current_sensitivity_ =
+          (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
+          (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
+      ESP_LOGD(TAG, "Mounting height: %d, Height threshold: %d, Sensitivity: %d", this->current_install_height_, this->current_height_threshold_, this->current_sensitivity_);
+      break;
+    case RUSULT_HEIGHT_THRESHOLD:
+      if (this->current_data_buf[0])
+        ESP_LOGD(TAG, "Successfully set the height threshold");
+      else
+        ESP_LOGD(TAG, "Failed to set the height threshold");
+      break;
+    case RUSULT_SENSITIVITY:
+      if (this->current_data_buf[0])
+        ESP_LOGD(TAG, "Successfully set the sensitivity");
+      else
+        ESP_LOGD(TAG, "Failed to set the sensitivity");
       break;
     default:
       break;
   }
 }
 
-// // Sending data frames
-// void MR60FDA2Component::send_query_(uint8_t *query, size_t string_length) { this->write_array(query, string_length);
-// }
+// Sending data frames
+void MR60FDA2Component::send_query_(uint8_t *query, size_t string_length) { this->write_array(query, string_length); }
 
-// // Send Heartbeat Packet Command
-// void MR60FDA2Component::get_heartbeat_packet() {
-//   uint8_t send_data_len = 10;
-//   uint8_t send_data[10] = {0x53, 0x59, 0x01, 0x01, 0x00, 0x01, 0x0F, 0x00, 0x54, 0x43};
-//   send_data[7] = get_frame_crc_sum(send_data, send_data_len);
-//   this->send_query_(send_data, send_data_len);
-// }
+/**
+ * @brief Convert a float value to a byte array.
+ *
+ * This function converts a float value to a byte array.
+ *
+ * @param value The float value to convert.
+ * @param bytes The byte array to store the converted value.
+ */
+void MR60FDA2Component::float_to_bytes(float value, unsigned char *bytes) {
+  union {
+    float float_value;
+    unsigned char byte_array[4];
+  } u;
+
+  u.float_value = value;
+  memcpy(bytes, u.byte_array, 4);
+}
+
+/**
+ * @brief Convert a 32-bit unsigned integer to a byte array.
+ *
+ * This function converts a 32-bit unsigned integer to a byte array.
+ *
+ * @param value The 32-bit unsigned integer to convert.
+ * @param bytes The byte array to store the converted value.
+ */
+void MR60FDA2Component::int_to_bytes(uint32_t value, unsigned char *bytes) {
+  bytes[0] = value & 0xFF;
+  bytes[1] = (value >> 8) & 0xFF;
+  bytes[2] = (value >> 16) & 0xFF;
+  bytes[3] = (value >> 24) & 0xFF;
+}
+
+// Send Heartbeat Packet Command
+void MR60FDA2Component::set_install_height(uint8_t index) {
+  size_t send_data_len = 13;
+  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x04, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  float_to_bytes(INSTALL_HEIGHT[index], &send_data[8]);
+
+  send_data[12] = calculateChecksum(send_data, send_data_len - 1);
+  this->send_query_(send_data, send_data_len);
+}
+
+void MR60FDA2Component::get_radar_params() {
+  size_t send_data_len = 8;
+  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x06, 0xF6};
+  this->send_query_(send_data, send_data_len);
+}
+
+void MR60FDA2Component::reset_radar() {
+  size_t send_data_len = 8;
+  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x21, 0x10, 0xCF};
+  this->send_query_(send_data, send_data_len);
+}
+
+void MR60FDA2Component::set_height_threshold(uint8_t index) {
+  size_t send_data_len = 13;
+  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x08, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  float_to_bytes(HEIGHT_THRESHOLD[index], &send_data[8]);
+
+  send_data[12] = calculateChecksum(send_data, send_data_len - 1);
+  this->send_query_(send_data, send_data_len);
+}
+
+void MR60FDA2Component::set_sensitivity(uint8_t index) {
+  size_t send_data_len = 13;
+  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x0A, 0xFB, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  int_to_bytes(SENSITIVITY[index], &send_data[8]);
+
+  send_data[12] = calculateChecksum(send_data, send_data_len - 1);
+  this->send_query_(send_data, send_data_len);
+}
 
 }  // namespace seeed_mr60fda2
 }  // namespace esphome
