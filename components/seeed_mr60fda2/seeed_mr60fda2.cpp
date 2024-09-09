@@ -190,17 +190,18 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
     case LOCATE_DATA_FRAME:
       this->current_frame_len_++;
       this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
-      if (this->current_frame_len_ - HEAD_CKSUM_LEN == this->current_data_frame_len_) {
+      this->current_data_buf[this->current_frame_len_ - LEN_TO_DATA_FRAME] = buffer;
+      if (this->current_frame_len_ - LEN_TO_HEAD_CKSUM == this->current_data_frame_len_) {
         this->current_frame_locate_++;
         // ESP_LOGD(TAG, "0x%02x", this->current_frame_buf[this->current_frame_len_ - 1]);
       }
       if (this->current_frame_len_ > FRAME_BUF_MAX_SIZE) {
-        ESP_LOGD(TAG, "PRACTICE_DATA_FRAME_LEN ERROR: %d", this->current_frame_len_ - HEAD_CKSUM_LEN);
+        ESP_LOGD(TAG, "PRACTICE_DATA_FRAME_LEN ERROR: %d", this->current_frame_len_ - LEN_TO_HEAD_CKSUM);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
     case LOCATE_DATA_CKSUM_FRAME:
-      if (this->validateChecksum(this->current_frame_buf, this->current_frame_len_, buffer)) {
+      if (this->validateChecksum(this->current_data_buf, this->current_data_frame_len_, buffer)) {
         this->current_frame_len_++;
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
@@ -241,14 +242,14 @@ void MR60FDA2Component::processFrame() {
   switch (this->current_frame_type_) {
     case IS_FALL_TYPE_BUFFER:
       if (this->is_fall_binary_sensor_ != nullptr) {
-        this->is_fall_binary_sensor_->publish_state(this->current_frame_buf[HEAD_CKSUM_LEN]);
+        this->is_fall_binary_sensor_->publish_state(this->current_frame_buf[LEN_TO_HEAD_CKSUM]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
         ESP_LOGD(TAG, "Succeed get fall info");
       }
       break;
     case PEOPLE_EXIST_TYPE_BUFFER:
       if (this->people_exist_binary_sensor_ != nullptr) {
-        this->people_exist_binary_sensor_->publish_state(this->current_frame_buf[HEAD_CKSUM_LEN]);
+        this->people_exist_binary_sensor_->publish_state(this->current_frame_buf[LEN_TO_HEAD_CKSUM]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
         ESP_LOGD(TAG, "Succeed get people exist info");
       }

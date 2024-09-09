@@ -21,8 +21,8 @@ namespace seeed_mr60fda2 {
 
 static const uint8_t DATA_BUF_MAX_SIZE = 16;
 static const uint8_t FRAME_BUF_MAX_SIZE = 37;
-static const uint8_t SIZE_FRAME_HEADER = 8;
-static const uint8_t HEAD_CKSUM_LEN = 8;
+static const uint8_t LEN_TO_HEAD_CKSUM = 8;
+static const uint8_t LEN_TO_DATA_FRAME = 9;
 
 static const uint8_t FRAME_HEADER_BUFFER = 0x01;
 static const uint16_t IS_FALL_TYPE_BUFFER = 0x0E02;
