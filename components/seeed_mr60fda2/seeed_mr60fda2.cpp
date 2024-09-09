@@ -151,8 +151,10 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
         // ESP_LOGD(TAG, "%x", this->current_frame_buf[this->current_frame_len_ - 1]);
+        ESP_LOGD(TAG, "GET CURRENT_FRAME_TYPE: 0x%02x 0x%02x", this->current_frame_buf[this->current_frame_len_ - 2], this->current_frame_buf[this->current_frame_len_ - 1]);
       } else {
         // ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: %x", this->current_frame_type_);
+        ESP_LOGD(TAG, "GET HEAD_CKSUM_FRAME: 0x%02x 0x%02x", this->current_frame_buf[this->current_frame_len_ - 2], this->current_frame_buf[this->current_frame_len_ - 1]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -162,9 +164,9 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
       if (this->validateChecksum(this->current_frame_buf, this->current_frame_len_,
                                  this->current_frame_buf[current_frame_len_ - 1])) {
         this->current_frame_locate_++;
-        ESP_LOGD(TAG, "GET HEAD_CKSUM_FRAME: %x%x", this->current_frame_buf[this->current_frame_len_ - 2], this->current_frame_buf[this->current_frame_len_ - 1]);
+        // ESP_LOGD(TAG, "HEAD_CKSUM_FRAME: %x", this->current_frame_buf[this->current_frame_len_ - 1]);
       } else {
-        ESP_LOGD(TAG, "HEAD_CKSUM_FRAME ERROR: %x%x", this->current_frame_buf[this->current_frame_len_ - 2], this->current_frame_buf[this->current_frame_len_ - 1]);
+        // ESP_LOGD(TAG, "HEAD_CKSUM_FRAME ERROR: %x", this->current_frame_buf[this->current_frame_len_ - 1]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
