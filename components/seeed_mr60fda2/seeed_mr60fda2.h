@@ -97,7 +97,7 @@ class MR60FDA2Component : public Component,
   void dump_config() override;
   void loop() override;
   void set_install_height(uint8_t index);
-  void get_radar_params();
+  void get_radar_parameters();
   void reset_radar();
   void set_height_threshold(uint8_t index);
   void set_sensitivity(uint8_t index);

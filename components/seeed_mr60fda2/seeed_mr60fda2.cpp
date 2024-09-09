@@ -255,7 +255,7 @@ void MR60FDA2Component::processFrame() {
       this->current_sensitivity_ =
           (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
           (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
-      ESP_LOGD(TAG, "Mounting height: %d, Height threshold: %d, Sensitivity: %d", this->current_install_height_, this->current_height_threshold_, this->current_sensitivity_);
+      ESP_LOGD(TAG, "Mounting height: %u, Height threshold: %u, Sensitivity: %u", this->current_install_height_, this->current_height_threshold_, this->current_sensitivity_);
       break;
     case RUSULT_HEIGHT_THRESHOLD:
       if (this->current_data_buf[0])
@@ -321,7 +321,7 @@ void MR60FDA2Component::set_install_height(uint8_t index) {
   this->send_query_(send_data, send_data_len);
 }
 
-void MR60FDA2Component::get_radar_params() {
+void MR60FDA2Component::get_radar_parameters() {
   size_t send_data_len = 8;
   uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x06, 0xF6};
   this->send_query_(send_data, send_data_len);
