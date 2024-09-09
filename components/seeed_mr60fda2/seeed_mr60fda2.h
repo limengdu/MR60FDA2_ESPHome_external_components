@@ -52,7 +52,7 @@ static const char *const SENSITIVITY[3] = {"1", "2", "3"};
 class MR60FDA2Component : public Component,
                           public uart::UARTDevice {  // The class name must be the name defined by text_sensor.py
 #ifdef USE_BINARY_SENSOR
-  SUB_BINARY_SENSOR(is_fall)
+  SUB_BINARY_SENSOR(people_exist)
 #endif
 #ifdef USE_BUTTON
   SUB_BUTTON(get_radar_parameters)
