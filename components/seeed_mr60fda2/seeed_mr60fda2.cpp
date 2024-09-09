@@ -49,7 +49,6 @@ void MR60FDA2Component::loop() {
 
   // Is there data on the serial port
   while (this->available()) {
-    ESP_LOGCONFIG(TAG, "DATA COMMING...");
     this->read_byte(&byte);
     this->splitFrame(byte);  // split data frame
   }
