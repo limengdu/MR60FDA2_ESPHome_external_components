@@ -99,7 +99,6 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         this->current_frame_locate_++;
       } else {
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
-        // ESP_LOGD(TAG, "FRAME_HEADER_BUFFER ERROR buffer: 0x%02x", buffer);
       }
       break;
     case LOCATE_ID_FRAME1:
@@ -119,18 +118,16 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
       this->current_frame_len_++;
       this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
       this->current_frame_locate_++;
-      // ESP_LOGD(TAG, "0x%02x", this->current_frame_buf[this->current_frame_len_ - 1]);
       break;
     case LOCATE_LENGTH_FRAME_L:
       this->current_data_frame_len_ += buffer;
       if (this->current_data_frame_len_ > DATA_BUF_MAX_SIZE) {
-        // ESP_LOGD(TAG, "DATA_FRAME_LEN ERROR: %d", this->current_data_frame_len_);
+        ESP_LOGD(TAG, "DATA_FRAME_LEN ERROR: %d", this->current_data_frame_len_);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       } else {
         this->current_frame_len_++;
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
-        // ESP_LOGD(TAG, "0x%02x", this->current_frame_buf[this->current_frame_len_ - 1]);
       }
       break;
     case LOCATE_TYPE_FRAME1:
@@ -138,21 +135,20 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
       this->current_frame_len_++;
       this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
       this->current_frame_locate_++;
-      // ESP_LOGD(TAG, "0x%02x", this->current_frame_buf[this->current_frame_len_ - 1]);
+      // ESP_LOGD(TAG, "GET LOCATE_TYPE_FRAME1: 0x%02x", this->current_frame_buf[this->current_frame_len_ - 1]);
       break;
     case LOCATE_TYPE_FRAME2:
       this->current_frame_type_ += buffer;
-      if (this->current_frame_type_ == PEOPLE_EXIST_TYPE_BUFFER) {
-        // if ((this->current_frame_type_ == IS_FALL_TYPE_BUFFER) ||
-        //     (this->current_frame_type_ == PEOPLE_EXIST_TYPE_BUFFER)) {
+      if ((this->current_frame_type_ == IS_FALL_TYPE_BUFFER) ||
+          (this->current_frame_type_ == PEOPLE_EXIST_TYPE_BUFFER)) {
         this->current_frame_len_++;
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
         // ESP_LOGD(TAG, "GET CURRENT_FRAME_TYPE: 0x%02x 0x%02x", this->current_frame_buf[this->current_frame_len_ - 2],
         //          this->current_frame_buf[this->current_frame_len_ - 1]);
       } else {
-        // ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: 0x%02x 0x%02x", this->current_frame_buf[this->current_frame_len_
-        // - 2], this->current_frame_buf[this->current_frame_len_ - 1]);
+        ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: 0x%02x 0x%02x", this->current_frame_buf[this->current_frame_len_
+        - 2], this->current_frame_buf[this->current_frame_len_ - 1]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -161,16 +157,6 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         this->current_frame_len_++;
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
-        // ESP_LOGD(TAG, "GET HEAD_CKSUM_FRAME: 0x%02x", this->current_frame_buf[this->current_frame_len_ - 1]);
-        // ESP_LOGD(TAG, "GET CURRENT_FRAME: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-        //          this->current_frame_buf[this->current_frame_len_ - 8],
-        //          this->current_frame_buf[this->current_frame_len_ - 7],
-        //          this->current_frame_buf[this->current_frame_len_ - 6],
-        //          this->current_frame_buf[this->current_frame_len_ - 5],
-        //          this->current_frame_buf[this->current_frame_len_ - 4],
-        //          this->current_frame_buf[this->current_frame_len_ - 3],
-        //          this->current_frame_buf[this->current_frame_len_ - 2],
-        //          this->current_frame_buf[this->current_frame_len_ - 1]);
       } else {
         ESP_LOGD(TAG, "HEAD_CKSUM_FRAME ERROR: 0x%02x", buffer);
         ESP_LOGD(TAG, "GET CURRENT_FRAME: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
@@ -193,7 +179,6 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
       this->current_data_buf[this->current_frame_len_ - LEN_TO_DATA_FRAME] = buffer;
       if (this->current_frame_len_ - LEN_TO_HEAD_CKSUM == this->current_data_frame_len_) {
         this->current_frame_locate_++;
-        // ESP_LOGD(TAG, "0x%02x", this->current_frame_buf[this->current_frame_len_ - 1]);
       }
       if (this->current_frame_len_ > FRAME_BUF_MAX_SIZE) {
         ESP_LOGD(TAG, "PRACTICE_DATA_FRAME_LEN ERROR: %d", this->current_frame_len_ - LEN_TO_HEAD_CKSUM);
@@ -205,17 +190,6 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         this->current_frame_len_++;
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
-        // ESP_LOGD(TAG, "GET CURRENT_FRAME: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-        //          this->current_frame_buf[this->current_frame_len_ - 10],
-        //          this->current_frame_buf[this->current_frame_len_ - 9],
-        //          this->current_frame_buf[this->current_frame_len_ - 8],
-        //          this->current_frame_buf[this->current_frame_len_ - 7],
-        //          this->current_frame_buf[this->current_frame_len_ - 6],
-        //          this->current_frame_buf[this->current_frame_len_ - 5],
-        //          this->current_frame_buf[this->current_frame_len_ - 4],
-        //          this->current_frame_buf[this->current_frame_len_ - 3],
-        //          this->current_frame_buf[this->current_frame_len_ - 2],
-        //          this->current_frame_buf[this->current_frame_len_ - 1]);
         this->processFrame();
       } else {
         ESP_LOGD(TAG, "DATA_CKSUM_FRAME ERROR: 0x%02x", buffer);

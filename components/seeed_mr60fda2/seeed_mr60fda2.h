@@ -65,8 +65,8 @@ class MR60FDA2Component : public Component,
   uint8_t current_frame_locate_;
   uint8_t current_frame_buf[FRAME_BUF_MAX_SIZE];
   uint8_t current_data_buf[DATA_BUF_MAX_SIZE];
-  size_t current_frame_len_;
   uint16_t current_frame_id_;
+  size_t current_frame_len_;
   size_t current_data_frame_len_;
   uint16_t current_frame_type_;
 
