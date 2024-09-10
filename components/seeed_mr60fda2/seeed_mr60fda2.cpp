@@ -267,14 +267,13 @@ void MR60FDA2Component::processFrame() {
           this->current_frame_buf[8], this->current_frame_buf[9], this->current_frame_buf[10],
           this->current_frame_buf[11], this->current_frame_buf[12], this->current_frame_buf[13],
           this->current_frame_buf[14], this->current_frame_buf[15], this->current_frame_buf[16],
-          this->current_frame_buf[17], this->current_frame_buf[18], this->current_frame_buf[19], );
+          this->current_frame_buf[17], this->current_frame_buf[18], this->current_frame_buf[19]);
       ESP_LOGD(
           TAG,
           "GET CURRENT_FRAME_2: 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x",
-          this->current_data_buf[0], this->current_data_buf[1], this->current_data_buf[2],
-          this->current_data_buf[3], this->current_data_buf[4], this->current_data_buf[5],
-          this->current_data_buf[6], this->current_data_buf[7], this->current_data_buf[8],
-          this->current_data_buf[9], this->current_data_buf[10], this->current_data_buf[11], );
+          this->current_data_buf[0], this->current_data_buf[1], this->current_data_buf[2], this->current_data_buf[3],
+          this->current_data_buf[4], this->current_data_buf[5], this->current_data_buf[6], this->current_data_buf[7],
+          this->current_data_buf[8], this->current_data_buf[9], this->current_data_buf[10], this->current_data_buf[11]);
       this->current_install_height_ =
           (static_cast<uint32_t>(current_data_buf[3]) << 24) | (static_cast<uint32_t>(current_data_buf[2]) << 16) |
           (static_cast<uint32_t>(current_data_buf[1]) << 8) | static_cast<uint32_t>(current_data_buf[0]);
