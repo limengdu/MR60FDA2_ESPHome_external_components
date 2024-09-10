@@ -294,22 +294,22 @@ void MR60FDA2Component::processFrame() {
           (static_cast<uint32_t>(current_data_buf[1]) << 8) | static_cast<uint32_t>(current_data_buf[0]);
       float install_height_float;
       memcpy(&install_height_float, &current_install_height_int_, sizeof(float));
-      select_index_ = find_nearest_index(this->install_height_float, INSTALL_HEIGHT, 7);
-      this->install_height_select_->publish_state(select_index_);
+      select_index_ = find_nearest_index(install_height_float, INSTALL_HEIGHT, 7);
+      this->install_height_select_->publish_state(INSTALL_HEIGHT_STR[select_index_]);
 
       this->current_height_threshold_int_ =
           (static_cast<uint32_t>(current_data_buf[7]) << 24) | (static_cast<uint32_t>(current_data_buf[6]) << 16) |
           (static_cast<uint32_t>(current_data_buf[5]) << 8) | static_cast<uint32_t>(current_data_buf[4]);
       float height_threshold_float;
       memcpy(&height_threshold_float, &current_height_threshold_int_, sizeof(float));
-      select_index_ = find_nearest_index(this->height_threshold_float, HEIGHT_THRESHOLD, 7);
-      this->height_threshold_select_->publish_state(select_index_);
+      select_index_ = find_nearest_index(height_threshold_float, HEIGHT_THRESHOLD, 7);
+      this->height_threshold_select_->publish_state(HEIGHT_THRESHOLD_STR[select_index_]);
 
       this->current_sensitivity_ =
           (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
           (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
       select_index_ = find_nearest_index(this->current_sensitivity_, SENSITIVITY, 3);
-      this->sensitivity_select_->publish_state(select_index_);
+      this->sensitivity_select_->publish_state(SENSITIVITY_STR[select_index_]);
 
       ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %lu", install_height_float,
                height_threshold_float, this->current_sensitivity_);
