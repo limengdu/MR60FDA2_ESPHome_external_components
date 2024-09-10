@@ -99,12 +99,10 @@ bool MR60FDA2Component::validateChecksum(const uint8_t *data, size_t len, uint8_
 void MR60FDA2Component::splitFrame(uint8_t buffer) {
   switch (this->current_frame_locate_) {
     case LOCATE_FRAME_HEADER:  // starting buffer
-      if (FRAME_HEADER_BUFFER == buffer) {
+      if (buffer == FRAME_HEADER_BUFFER) {
         this->current_frame_len_ = 1;
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
-      } else {
-        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
     case LOCATE_ID_FRAME1:
