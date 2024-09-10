@@ -91,6 +91,7 @@ class MR60FDA2Component : public Component,
   void send_query_(uint8_t *query, size_t string_length);
   void float_to_bytes(float value, unsigned char *bytes);
   void int_to_bytes(uint32_t value, unsigned char *bytes);
+  uint8_t find_nearest_index(float value, const float *arr, int size);
 
  public:
   float get_setup_priority() const override { return esphome::setup_priority::LATE; }
