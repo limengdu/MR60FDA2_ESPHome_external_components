@@ -148,7 +148,8 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
       // if ((this->current_frame_type_ == IS_FALL_TYPE_BUFFER) ||
       //     (this->current_frame_type_ == PEOPLE_EXIST_TYPE_BUFFER) ||
       //     (this->current_frame_type_ == RUSULT_INSTALL_HEIGHT) || (this->current_frame_type_ == RUSULT_PARAMETERS) ||
-      //     (this->current_frame_type_ == RUSULT_HEIGHT_THRESHOLD) || (this->current_frame_type_ == RUSULT_SENSITIVITY)) {
+      //     (this->current_frame_type_ == RUSULT_HEIGHT_THRESHOLD) || (this->current_frame_type_ ==
+      //     RUSULT_SENSITIVITY)) {
       if ((this->current_frame_type_ == RUSULT_INSTALL_HEIGHT) || (this->current_frame_type_ == RUSULT_PARAMETERS) ||
           (this->current_frame_type_ == RUSULT_HEIGHT_THRESHOLD) || (this->current_frame_type_ == RUSULT_SENSITIVITY)) {
         this->current_frame_len_++;
@@ -257,7 +258,8 @@ void MR60FDA2Component::processFrame() {
       this->current_sensitivity_ =
           (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
           (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
-      ESP_LOGD(TAG, "Mounting height: %lu, Height threshold: %lu, Sensitivity: %lu", this->current_install_height_, this->current_height_threshold_, this->current_sensitivity_);
+      ESP_LOGD(TAG, "Mounting height: %lu, Height threshold: %lu, Sensitivity: %lu", this->current_install_height_,
+               this->current_height_threshold_, this->current_sensitivity_);
       break;
     case RUSULT_HEIGHT_THRESHOLD:
       if (this->current_data_buf[0])
@@ -321,18 +323,33 @@ void MR60FDA2Component::set_install_height(uint8_t index) {
 
   send_data[12] = calculateChecksum(send_data, send_data_len - 1);
   this->send_query_(send_data, send_data_len);
+  ESP_LOGD(TAG,
+           "SEND INSTALL HEIGHT FRAME: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
+           "0x%02x 0x%02x",
+           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
+           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
 }
 
 void MR60FDA2Component::get_radar_parameters() {
   size_t send_data_len = 8;
   uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x06, 0xF6};
   this->send_query_(send_data, send_data_len);
+  ESP_LOGD(TAG,
+           "SEND GET PARAMETERS: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
+           "0x%02x 0x%02x",
+           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
+           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
 }
 
 void MR60FDA2Component::reset_radar() {
   size_t send_data_len = 8;
   uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x21, 0x10, 0xCF};
   this->send_query_(send_data, send_data_len);
+  ESP_LOGD(TAG,
+           "SEND RESET: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
+           "0x%02x 0x%02x",
+           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
+           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
 }
 
 void MR60FDA2Component::set_height_threshold(uint8_t index) {
@@ -343,6 +360,11 @@ void MR60FDA2Component::set_height_threshold(uint8_t index) {
 
   send_data[12] = calculateChecksum(send_data, send_data_len - 1);
   this->send_query_(send_data, send_data_len);
+  ESP_LOGD(TAG,
+           "SEND HEIGHT THRESHOLD: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
+           "0x%02x 0x%02x",
+           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
+           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
 }
 
 void MR60FDA2Component::set_sensitivity(uint8_t index) {
@@ -353,6 +375,11 @@ void MR60FDA2Component::set_sensitivity(uint8_t index) {
 
   send_data[12] = calculateChecksum(send_data, send_data_len - 1);
   this->send_query_(send_data, send_data_len);
+  ESP_LOGD(TAG,
+           "SEND SET SENSITIVITY: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
+           "0x%02x 0x%02x",
+           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
+           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
 }
 
 }  // namespace seeed_mr60fda2
