@@ -43,6 +43,8 @@ void MR60FDA2Component::setup() {
   this->current_height_threshold_ = 0;
   this->current_sensitivity_ = 0;
 
+  this->get_radar_parameters();
+
   memset(this->current_frame_buf, 0, FRAME_BUF_MAX_SIZE);
   memset(this->current_data_buf, 0, DATA_BUF_MAX_SIZE);
 
@@ -251,8 +253,10 @@ void MR60FDA2Component::processFrame() {
     case RUSULT_INSTALL_HEIGHT:
       if (this->current_data_buf[0])
         ESP_LOGD(TAG, "Successfully set the mounting height");
+        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       else
         ESP_LOGD(TAG, "Failed to set the mounting height");
+        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
     case RUSULT_PARAMETERS:
       this->current_install_height_ =
@@ -266,18 +270,23 @@ void MR60FDA2Component::processFrame() {
           (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
       ESP_LOGD(TAG, "Mounting height: %lu, Height threshold: %lu, Sensitivity: %lu", this->current_install_height_,
                this->current_height_threshold_, this->current_sensitivity_);
+      this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
     case RUSULT_HEIGHT_THRESHOLD:
       if (this->current_data_buf[0])
         ESP_LOGD(TAG, "Successfully set the height threshold");
+        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       else
         ESP_LOGD(TAG, "Failed to set the height threshold");
+        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
     case RUSULT_SENSITIVITY:
       if (this->current_data_buf[0])
         ESP_LOGD(TAG, "Successfully set the sensitivity");
+        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       else
         ESP_LOGD(TAG, "Failed to set the sensitivity");
+        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
     default:
       break;
