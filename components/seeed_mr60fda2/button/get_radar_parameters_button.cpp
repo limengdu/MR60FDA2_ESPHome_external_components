@@ -3,9 +3,7 @@
 namespace esphome {
 namespace seeed_mr60fda2 {
 
-void GetRadarParametersButton::press_action() {
-    this->get_radar_parameters();
-}
+void GetRadarParametersButton::press_action() { this->parent_->get_radar_parameters(); }
 
 }  // namespace seeed_mr60fda2
 }  // namespace esphome

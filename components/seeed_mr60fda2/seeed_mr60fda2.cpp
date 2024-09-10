@@ -255,7 +255,7 @@ void MR60FDA2Component::processFrame() {
       this->current_sensitivity_ =
           (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
           (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
-      ESP_LOGD(TAG, "Mounting height: %u, Height threshold: %u, Sensitivity: %u", this->current_install_height_, this->current_height_threshold_, this->current_sensitivity_);
+      ESP_LOGD(TAG, "Mounting height: %lu, Height threshold: %lu, Sensitivity: %lu", this->current_install_height_, this->current_height_threshold_, this->current_sensitivity_);
       break;
     case RUSULT_HEIGHT_THRESHOLD:
       if (this->current_data_buf[0])
