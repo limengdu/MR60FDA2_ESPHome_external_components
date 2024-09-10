@@ -124,10 +124,14 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
       this->current_frame_len_++;
       this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
       this->current_frame_locate_++;
+      ESP_LOGD(TAG, "DATA_FRAME_LEN_H: 0x%02x", buffer);
+      ESP_LOGD(TAG, "CURRENT_FRAME_LEN_H: 0x%04x", this->current_data_frame_len_);
       break;
     case LOCATE_LENGTH_FRAME_L:
       this->current_data_frame_len_ += buffer;
       if (this->current_data_frame_len_ > DATA_BUF_MAX_SIZE) {
+        ESP_LOGD(TAG, "DATA_FRAME_LEN_L: 0x%02x", buffer);
+        ESP_LOGD(TAG, "CURRENT_FRAME_LEN: 0x%04x", this->current_data_frame_len_);
         ESP_LOGD(TAG, "DATA_FRAME_LEN ERROR: %d", this->current_data_frame_len_);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       } else {
@@ -318,13 +322,58 @@ void MR60FDA2Component::int_to_bytes(uint32_t value, unsigned char *bytes) {
 void MR60FDA2Component::set_install_height(uint8_t index) {
   size_t send_data_len = 13;
   uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x04, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00};
+  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00}
 
   float_to_bytes(INSTALL_HEIGHT[index], &send_data[8]);
 
-  send_data[12] = calculateChecksum(send_data, send_data_len - 1);
+  for(int i = 0; i < 4; i++){
+    data_frame[i] = send_data[i + 8];
+  }
+
+  send_data[12] = calculateChecksum(data_frame, 4);
   this->send_query_(send_data, send_data_len);
   ESP_LOGD(TAG,
            "SEND INSTALL HEIGHT FRAME: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
+           "0x%02x 0x%02x",
+           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
+           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
+}
+
+void MR60FDA2Component::set_height_threshold(uint8_t index) {
+  size_t send_data_len = 13;
+  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x08, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00};
+  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00}
+
+  float_to_bytes(HEIGHT_THRESHOLD[index], &send_data[8]);
+
+  for(int i = 0; i < 4; i++){
+    data_frame[i] = send_data[i + 8];
+  }
+
+  send_data[12] = calculateChecksum(data_frame, 4);
+  this->send_query_(send_data, send_data_len);
+  ESP_LOGD(TAG,
+           "SEND HEIGHT THRESHOLD: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
+           "0x%02x 0x%02x",
+           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
+           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
+}
+
+void MR60FDA2Component::set_sensitivity(uint8_t index) {
+  size_t send_data_len = 13;
+  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x0A, 0xFB, 0x00, 0x00, 0x00, 0x00, 0x00};
+  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00}
+
+  int_to_bytes(SENSITIVITY[index], &send_data[8]);
+
+  for(int i = 0; i < 4; i++){
+    data_frame[i] = send_data[i + 8];
+  }
+
+  send_data[12] = calculateChecksum(data_frame, 4);
+  this->send_query_(send_data, send_data_len);
+  ESP_LOGD(TAG,
+           "SEND SET SENSITIVITY: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
            "0x%02x 0x%02x",
            send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
            send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
@@ -348,36 +397,6 @@ void MR60FDA2Component::reset_radar() {
            "SEND RESET: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
            send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
            send_data[7]);
-}
-
-void MR60FDA2Component::set_height_threshold(uint8_t index) {
-  size_t send_data_len = 13;
-  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x08, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-  float_to_bytes(HEIGHT_THRESHOLD[index], &send_data[8]);
-
-  send_data[12] = calculateChecksum(send_data, send_data_len - 1);
-  this->send_query_(send_data, send_data_len);
-  ESP_LOGD(TAG,
-           "SEND HEIGHT THRESHOLD: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
-           "0x%02x 0x%02x",
-           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
-           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
-}
-
-void MR60FDA2Component::set_sensitivity(uint8_t index) {
-  size_t send_data_len = 13;
-  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x0A, 0xFB, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-  int_to_bytes(SENSITIVITY[index], &send_data[8]);
-
-  send_data[12] = calculateChecksum(send_data, send_data_len - 1);
-  this->send_query_(send_data, send_data_len);
-  ESP_LOGD(TAG,
-           "SEND SET SENSITIVITY: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
-           "0x%02x 0x%02x",
-           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
-           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
 }
 
 }  // namespace seeed_mr60fda2
