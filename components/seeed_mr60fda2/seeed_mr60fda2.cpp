@@ -125,10 +125,9 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         this->current_frame_len_++;
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
+      } else {
         ESP_LOGD(TAG, "DATA_FRAME_LEN_H: 0x%02x", buffer);
         ESP_LOGD(TAG, "CURRENT_FRAME_LEN_H: 0x%04x", this->current_data_frame_len_);
-      } else {
-        ESP_LOGD(TAG, "DATA_FRAME_LEN ERROR: %d", this->current_data_frame_len_);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
