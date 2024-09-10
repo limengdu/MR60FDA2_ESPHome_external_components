@@ -126,17 +126,17 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
       } else {
-        ESP_LOGD(TAG, "DATA_FRAME_LEN_H: 0x%02x", buffer);
-        ESP_LOGD(TAG, "CURRENT_FRAME_LEN_H: 0x%04x", this->current_data_frame_len_);
+        // ESP_LOGD(TAG, "DATA_FRAME_LEN_H: 0x%02x", buffer);
+        // ESP_LOGD(TAG, "CURRENT_FRAME_LEN_H: 0x%04x", this->current_data_frame_len_);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
     case LOCATE_LENGTH_FRAME_L:
       this->current_data_frame_len_ += buffer;
       if (this->current_data_frame_len_ > DATA_BUF_MAX_SIZE) {
-        ESP_LOGD(TAG, "DATA_FRAME_LEN_L: 0x%02x", buffer);
-        ESP_LOGD(TAG, "CURRENT_FRAME_LEN: 0x%04x", this->current_data_frame_len_);
-        ESP_LOGD(TAG, "DATA_FRAME_LEN ERROR: %d", this->current_data_frame_len_);
+        // ESP_LOGD(TAG, "DATA_FRAME_LEN_L: 0x%02x", buffer);
+        // ESP_LOGD(TAG, "CURRENT_FRAME_LEN: 0x%04x", this->current_data_frame_len_);
+        // ESP_LOGD(TAG, "DATA_FRAME_LEN ERROR: %d", this->current_data_frame_len_);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       } else {
         this->current_frame_len_++;
