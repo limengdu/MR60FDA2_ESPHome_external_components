@@ -224,9 +224,9 @@ void MR60FDA2Component::processFrame() {
     case IS_FALL_TYPE_BUFFER:
       if (this->is_fall_text_sensor_ != nullptr) {
         if (this->current_frame_buf[LEN_TO_HEAD_CKSUM] == 0) {
-          this->is_fall_text_sensor_->publish_state("Normal");
+          // this->is_fall_text_sensor_->publish_state("Normal");
         } else if (this->current_frame_buf[LEN_TO_HEAD_CKSUM] == 1) {
-          this->is_fall_text_sensor_->publish_state("Falling");
+          // this->is_fall_text_sensor_->publish_state("Falling");
         }
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
         // ESP_LOGD(TAG, "Successful get fall info");
