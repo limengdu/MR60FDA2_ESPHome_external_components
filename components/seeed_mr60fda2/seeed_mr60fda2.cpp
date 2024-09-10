@@ -166,9 +166,9 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         ESP_LOGD(TAG, "GET CURRENT_FRAME_TYPE: 0x%02x 0x%02x", this->current_frame_buf[this->current_frame_len_ - 2],
                  this->current_frame_buf[this->current_frame_len_ - 1]);
       } else {
-        // ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: 0x%02x 0x%02x",
-        //          this->current_frame_buf[this->current_frame_len_ - 2],
-        //          this->current_frame_buf[this->current_frame_len_ - 1]);
+        ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: 0x%02x 0x%02x",
+                 this->current_frame_buf[this->current_frame_len_ - 2],
+                 this->current_frame_buf[this->current_frame_len_ - 1]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
