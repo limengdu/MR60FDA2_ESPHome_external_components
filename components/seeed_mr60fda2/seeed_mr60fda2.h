@@ -79,8 +79,8 @@ class MR60FDA2Component : public Component,
   size_t current_frame_len_;
   size_t current_data_frame_len_;
   uint16_t current_frame_type_;
-  uint32_t current_install_height_;
-  uint32_t current_height_threshold_;
+  uint32_t current_install_height_int;
+  uint32_t current_height_threshold_int;
   uint32_t current_sensitivity_;
 
   bool validateChecksum(const uint8_t *data, size_t len, uint8_t expected_checksum);
