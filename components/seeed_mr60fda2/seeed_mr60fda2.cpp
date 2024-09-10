@@ -39,8 +39,8 @@ void MR60FDA2Component::setup() {
   this->current_frame_len_ = 0;
   this->current_data_frame_len_ = 0;
   this->current_frame_type_ = 0;
-  this->current_install_height_ = 0;
-  this->current_height_threshold_ = 0;
+  this->current_install_height_int_ = 0;
+  this->current_height_threshold_int_ = 0;
   this->current_sensitivity_ = 0;
 
   // this->get_radar_parameters();
@@ -274,20 +274,25 @@ void MR60FDA2Component::processFrame() {
           this->current_data_buf[0], this->current_data_buf[1], this->current_data_buf[2], this->current_data_buf[3],
           this->current_data_buf[4], this->current_data_buf[5], this->current_data_buf[6], this->current_data_buf[7],
           this->current_data_buf[8], this->current_data_buf[9], this->current_data_buf[10], this->current_data_buf[11]);
-      this->current_install_height_ =
+
+      this->current_install_height_int =
           (static_cast<uint32_t>(current_data_buf[3]) << 24) | (static_cast<uint32_t>(current_data_buf[2]) << 16) |
           (static_cast<uint32_t>(current_data_buf[1]) << 8) | static_cast<uint32_t>(current_data_buf[0]);
-      this->current_install_height_ = *reinterpret_cast<float *>(&this->current_install_height_);
-      this->current_height_threshold_ =
+      float install_height_float;
+      memcpy(&install_height_float, &current_install_height_int, sizeof(float));
+
+      this->current_height_threshold_int =
           (static_cast<uint32_t>(current_data_buf[7]) << 24) | (static_cast<uint32_t>(current_data_buf[6]) << 16) |
           (static_cast<uint32_t>(current_data_buf[5]) << 8) | static_cast<uint32_t>(current_data_buf[4]);
-      this->current_height_threshold_ = *reinterpret_cast<float *>(&this->current_height_threshold_);
+      float height_threshold_float;
+      memcpy(&height_threshold_float, &current_height_threshold_int, sizeof(float));
+
       this->current_sensitivity_ =
           (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
           (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
-      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %lu",
-               static_cast<float>(this->current_install_height_), static_cast<float>(this->current_height_threshold_),
-               this->current_sensitivity_);
+
+      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %lu", install_height_float,
+               height_threshold_float, this->current_sensitivity_);
       this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
     case RUSULT_HEIGHT_THRESHOLD:
