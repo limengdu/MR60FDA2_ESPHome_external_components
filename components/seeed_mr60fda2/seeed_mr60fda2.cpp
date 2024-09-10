@@ -335,10 +335,9 @@ void MR60FDA2Component::get_radar_parameters() {
   uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x06, 0xF6};
   this->send_query_(send_data, send_data_len);
   ESP_LOGD(TAG,
-           "SEND GET PARAMETERS: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
-           "0x%02x 0x%02x",
+           "SEND GET PARAMETERS: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
            send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
-           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
+           send_data[7];)
 }
 
 void MR60FDA2Component::reset_radar() {
@@ -346,10 +345,9 @@ void MR60FDA2Component::reset_radar() {
   uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x21, 0x10, 0xCF};
   this->send_query_(send_data, send_data_len);
   ESP_LOGD(TAG,
-           "SEND RESET: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
-           "0x%02x 0x%02x",
+           "SEND RESET: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
            send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
-           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
+           send_data[7]);
 }
 
 void MR60FDA2Component::set_height_threshold(uint8_t index) {
