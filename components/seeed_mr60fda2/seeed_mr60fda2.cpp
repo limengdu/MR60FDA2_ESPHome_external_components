@@ -264,16 +264,17 @@ void MR60FDA2Component::processFrame() {
       this->current_install_height_ =
           (static_cast<uint32_t>(current_data_buf[3]) << 24) | (static_cast<uint32_t>(current_data_buf[2]) << 16) |
           (static_cast<uint32_t>(current_data_buf[1]) << 8) | static_cast<uint32_t>(current_data_buf[0]);
-      this->current_install_height_ = *reinterpret_cast<float*>(&this->current_install_height_);
+      this->current_install_height_ = *reinterpret_cast<float *>(&this->current_install_height_);
       this->current_height_threshold_ =
           (static_cast<uint32_t>(current_data_buf[7]) << 24) | (static_cast<uint32_t>(current_data_buf[6]) << 16) |
           (static_cast<uint32_t>(current_data_buf[5]) << 8) | static_cast<uint32_t>(current_data_buf[4]);
-      this->current_height_threshold_ = *reinterpret_cast<float*>(&this->current_height_threshold_);
+      this->current_height_threshold_ = *reinterpret_cast<float *>(&this->current_height_threshold_);
       this->current_sensitivity_ =
           (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
           (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
-      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %lu", this->current_install_height_,
-               this->current_height_threshold_, this->current_sensitivity_);
+      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %lu",
+               static_cast<float>(this->current_install_height_), static_cast<float>(this->current_height_threshold_),
+               this->current_sensitivity_);
       this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
     case RUSULT_HEIGHT_THRESHOLD:
