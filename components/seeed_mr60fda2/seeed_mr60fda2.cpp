@@ -229,14 +229,14 @@ void MR60FDA2Component::processFrame() {
           this->is_fall_text_sensor_->publish_state("Falling");
         }
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
-        ESP_LOGD(TAG, "Successful get fall info");
+        // ESP_LOGD(TAG, "Successful get fall info");
       }
       break;
     case PEOPLE_EXIST_TYPE_BUFFER:
       if (this->people_exist_binary_sensor_ != nullptr) {
         this->people_exist_binary_sensor_->publish_state(this->current_frame_buf[LEN_TO_HEAD_CKSUM]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
-        ESP_LOGD(TAG, "Successful get people exist info");
+        // ESP_LOGD(TAG, "Successful get people exist info");
       }
       break;
     case RUSULT_INSTALL_HEIGHT:
