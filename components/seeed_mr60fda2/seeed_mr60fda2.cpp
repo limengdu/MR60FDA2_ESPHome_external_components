@@ -337,7 +337,7 @@ void MR60FDA2Component::get_radar_parameters() {
   ESP_LOGD(TAG,
            "SEND GET PARAMETERS: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
            send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
-           send_data[7];)
+           send_data[7]);
 }
 
 void MR60FDA2Component::reset_radar() {
