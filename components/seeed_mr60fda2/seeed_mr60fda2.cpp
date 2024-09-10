@@ -275,17 +275,17 @@ void MR60FDA2Component::processFrame() {
           this->current_data_buf[4], this->current_data_buf[5], this->current_data_buf[6], this->current_data_buf[7],
           this->current_data_buf[8], this->current_data_buf[9], this->current_data_buf[10], this->current_data_buf[11]);
 
-      this->current_install_height_int =
+      this->current_install_height_int_ =
           (static_cast<uint32_t>(current_data_buf[3]) << 24) | (static_cast<uint32_t>(current_data_buf[2]) << 16) |
           (static_cast<uint32_t>(current_data_buf[1]) << 8) | static_cast<uint32_t>(current_data_buf[0]);
       float install_height_float;
-      memcpy(&install_height_float, &current_install_height_int, sizeof(float));
+      memcpy(&install_height_float, &current_install_height_int_, sizeof(float));
 
-      this->current_height_threshold_int =
+      this->current_height_threshold_int_ =
           (static_cast<uint32_t>(current_data_buf[7]) << 24) | (static_cast<uint32_t>(current_data_buf[6]) << 16) |
           (static_cast<uint32_t>(current_data_buf[5]) << 8) | static_cast<uint32_t>(current_data_buf[4]);
       float height_threshold_float;
-      memcpy(&height_threshold_float, &current_height_threshold_int, sizeof(float));
+      memcpy(&height_threshold_float, &current_height_threshold_int_, sizeof(float));
 
       this->current_sensitivity_ =
           (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
