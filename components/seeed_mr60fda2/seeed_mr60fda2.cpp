@@ -322,7 +322,7 @@ void MR60FDA2Component::int_to_bytes(uint32_t value, unsigned char *bytes) {
 void MR60FDA2Component::set_install_height(uint8_t index) {
   size_t send_data_len = 13;
   uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x04, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00}
+  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00};
 
   float_to_bytes(INSTALL_HEIGHT[index], &send_data[8]);
 
@@ -342,7 +342,7 @@ void MR60FDA2Component::set_install_height(uint8_t index) {
 void MR60FDA2Component::set_height_threshold(uint8_t index) {
   size_t send_data_len = 13;
   uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x08, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00}
+  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00};
 
   float_to_bytes(HEIGHT_THRESHOLD[index], &send_data[8]);
 
@@ -362,7 +362,7 @@ void MR60FDA2Component::set_height_threshold(uint8_t index) {
 void MR60FDA2Component::set_sensitivity(uint8_t index) {
   size_t send_data_len = 13;
   uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x0A, 0xFB, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00}
+  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00};
 
   int_to_bytes(SENSITIVITY[index], &send_data[8]);
 
