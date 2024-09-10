@@ -166,9 +166,9 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
         ESP_LOGD(TAG, "GET CURRENT_FRAME_TYPE: 0x%02x 0x%02x", this->current_frame_buf[this->current_frame_len_ - 2],
                  this->current_frame_buf[this->current_frame_len_ - 1]);
       } else {
-        ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: 0x%02x 0x%02x",
-                 this->current_frame_buf[this->current_frame_len_ - 2],
-                 this->current_frame_buf[this->current_frame_len_ - 1]);
+        // ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: 0x%02x 0x%02x",
+        //          this->current_frame_buf[this->current_frame_len_ - 2],
+        //          this->current_frame_buf[this->current_frame_len_ - 1]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -365,7 +365,7 @@ void MR60FDA2Component::set_height_threshold(uint8_t index) {
 
 void MR60FDA2Component::set_sensitivity(uint8_t index) {
   size_t send_data_len = 13;
-  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x0A, 0xFB, 0x00, 0x00, 0x00, 0x00, 0x00};
+  uint8_t send_data[send_data_len] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x0A, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00};
   uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00};
 
   int_to_bytes(SENSITIVITY[index], &send_data[8]);
