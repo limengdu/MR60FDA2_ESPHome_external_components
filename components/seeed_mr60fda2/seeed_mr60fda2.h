@@ -51,7 +51,7 @@ enum FrameLocation {
 
 static const float INSTALL_HEIGHT[7] = {2.4f, 2.5f, 2.6f, 2.7f, 2.8f, 2.9f, 3.0f};
 static const float HEIGHT_THRESHOLD[7] = {0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f};
-static const uint8_t SENSITIVITY[3] = {1, 2, 3};
+static const uint8_t SENSITIVITY[3] = {3, 15, 30};
 
 class MR60FDA2Component : public Component,
                           public uart::UARTDevice {  // The class name must be the name defined by text_sensor.py
