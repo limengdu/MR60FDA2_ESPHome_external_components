@@ -82,6 +82,7 @@ class MR60FDA2Component : public Component,
   uint32_t current_install_height_int_;
   uint32_t current_height_threshold_int_;
   uint32_t current_sensitivity_;
+  uint8_t select_index_;
 
   bool validateChecksum(const uint8_t *data, size_t len, uint8_t expected_checksum);
   uint8_t calculateChecksum(const uint8_t *data, size_t len);

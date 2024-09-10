@@ -42,6 +42,7 @@ void MR60FDA2Component::setup() {
   this->current_install_height_int_ = 0;
   this->current_height_threshold_int_ = 0;
   this->current_sensitivity_ = 0;
+  this->select_index_ = 0;
 
   // this->get_radar_parameters();
 
@@ -96,6 +97,19 @@ uint8_t MR60FDA2Component::calculateChecksum(const uint8_t *data, size_t len) {
  */
 bool MR60FDA2Component::validateChecksum(const uint8_t *data, size_t len, uint8_t expected_checksum) {
   return calculateChecksum(data, len) == expected_checksum;
+}
+
+uint8_t MR60FDA2Component::find_nearest_index(float value, const float *arr, int size) {
+  int nearest_index = 0;
+  float min_diff = std::abs(value - arr[0]);
+  for (int i = 1; i < size; ++i) {
+    float diff = std::abs(value - arr[i]);
+    if (diff < min_diff) {
+      min_diff = diff;
+      nearest_index = i;
+    }
+  }
+  return nearest_index;
 }
 
 void MR60FDA2Component::splitFrame(uint8_t buffer) {
@@ -280,16 +294,22 @@ void MR60FDA2Component::processFrame() {
           (static_cast<uint32_t>(current_data_buf[1]) << 8) | static_cast<uint32_t>(current_data_buf[0]);
       float install_height_float;
       memcpy(&install_height_float, &current_install_height_int_, sizeof(float));
+      select_index_ = find_nearest_index(this->install_height_float, INSTALL_HEIGHT, 7);
+      this->install_height_select_->publish_state(select_index_);
 
       this->current_height_threshold_int_ =
           (static_cast<uint32_t>(current_data_buf[7]) << 24) | (static_cast<uint32_t>(current_data_buf[6]) << 16) |
           (static_cast<uint32_t>(current_data_buf[5]) << 8) | static_cast<uint32_t>(current_data_buf[4]);
       float height_threshold_float;
       memcpy(&height_threshold_float, &current_height_threshold_int_, sizeof(float));
+      select_index_ = find_nearest_index(this->height_threshold_float, HEIGHT_THRESHOLD, 7);
+      this->height_threshold_select_->publish_state(select_index_);
 
       this->current_sensitivity_ =
           (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
           (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
+      select_index_ = find_nearest_index(this->current_sensitivity_, SENSITIVITY, 3);
+      this->sensitivity_select_->publish_state(select_index_);
 
       ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %lu", install_height_float,
                height_threshold_float, this->current_sensitivity_);
