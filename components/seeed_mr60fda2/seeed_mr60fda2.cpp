@@ -43,7 +43,7 @@ void MR60FDA2Component::setup() {
   this->current_height_threshold_ = 0;
   this->current_sensitivity_ = 0;
 
-  this->get_radar_parameters();
+  // this->get_radar_parameters();
 
   memset(this->current_frame_buf, 0, FRAME_BUF_MAX_SIZE);
   memset(this->current_data_buf, 0, DATA_BUF_MAX_SIZE);
