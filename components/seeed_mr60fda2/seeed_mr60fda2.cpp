@@ -44,7 +44,7 @@ void MR60FDA2Component::setup() {
   this->current_sensitivity_ = 0;
   this->select_index_ = 0;
 
-  // this->get_radar_parameters();
+  this->get_radar_parameters();
 
   memset(this->current_frame_buf, 0, FRAME_BUF_MAX_SIZE);
   memset(this->current_data_buf, 0, DATA_BUF_MAX_SIZE);
@@ -55,11 +55,9 @@ void MR60FDA2Component::setup() {
 // main loop
 void MR60FDA2Component::loop() {
   uint8_t byte;
-  // uint8_t array[7];
 
   // Is there data on the serial port
   while (this->available()) {
-    // this->read_array(&array, 7)
     this->read_byte(&byte);
     this->splitFrame(byte);  // split data frame
   }
@@ -171,10 +169,6 @@ void MR60FDA2Component::splitFrame(uint8_t buffer) {
           (this->current_frame_type_ == PEOPLE_EXIST_TYPE_BUFFER) ||
           (this->current_frame_type_ == RUSULT_INSTALL_HEIGHT) || (this->current_frame_type_ == RUSULT_PARAMETERS) ||
           (this->current_frame_type_ == RUSULT_HEIGHT_THRESHOLD) || (this->current_frame_type_ == RUSULT_SENSITIVITY)) {
-        // if ((this->current_frame_type_ == RUSULT_INSTALL_HEIGHT) || (this->current_frame_type_ == RUSULT_PARAMETERS)
-        // ||
-        //     (this->current_frame_type_ == RUSULT_HEIGHT_THRESHOLD) || (this->current_frame_type_ ==
-        //     RUSULT_SENSITIVITY)) {
         this->current_frame_len_++;
         this->current_frame_buf[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
@@ -250,19 +244,17 @@ void MR60FDA2Component::processFrame() {
     case IS_FALL_TYPE_BUFFER:
       if (this->is_fall_text_sensor_ != nullptr) {
         if (this->current_frame_buf[LEN_TO_HEAD_CKSUM] == 0) {
-          // this->is_fall_text_sensor_->publish_state("Normal");
+          this->is_fall_text_sensor_->publish_state("Normal");
         } else if (this->current_frame_buf[LEN_TO_HEAD_CKSUM] == 1) {
-          // this->is_fall_text_sensor_->publish_state("Falling");
+          this->is_fall_text_sensor_->publish_state("Falling");
         }
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
-        // ESP_LOGD(TAG, "Successful get fall info");
       }
       break;
     case PEOPLE_EXIST_TYPE_BUFFER:
       if (this->people_exist_binary_sensor_ != nullptr) {
         this->people_exist_binary_sensor_->publish_state(this->current_frame_buf[LEN_TO_HEAD_CKSUM]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
-        // ESP_LOGD(TAG, "Successful get people exist info");
       }
       break;
     case RUSULT_INSTALL_HEIGHT:
@@ -273,47 +265,6 @@ void MR60FDA2Component::processFrame() {
         ESP_LOGD(TAG, "Failed to set the mounting height");
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
-      break;
-    case RUSULT_PARAMETERS:
-      ESP_LOGD(
-          TAG,
-          "GET CURRENT_FRAME: 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x",
-          this->current_frame_buf[8], this->current_frame_buf[9], this->current_frame_buf[10],
-          this->current_frame_buf[11], this->current_frame_buf[12], this->current_frame_buf[13],
-          this->current_frame_buf[14], this->current_frame_buf[15], this->current_frame_buf[16],
-          this->current_frame_buf[17], this->current_frame_buf[18], this->current_frame_buf[19]);
-      ESP_LOGD(
-          TAG,
-          "GET CURRENT_FRAME_2: 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x",
-          this->current_data_buf[0], this->current_data_buf[1], this->current_data_buf[2], this->current_data_buf[3],
-          this->current_data_buf[4], this->current_data_buf[5], this->current_data_buf[6], this->current_data_buf[7],
-          this->current_data_buf[8], this->current_data_buf[9], this->current_data_buf[10], this->current_data_buf[11]);
-
-      this->current_install_height_int_ =
-          (static_cast<uint32_t>(current_data_buf[3]) << 24) | (static_cast<uint32_t>(current_data_buf[2]) << 16) |
-          (static_cast<uint32_t>(current_data_buf[1]) << 8) | static_cast<uint32_t>(current_data_buf[0]);
-      float install_height_float;
-      memcpy(&install_height_float, &current_install_height_int_, sizeof(float));
-      select_index_ = find_nearest_index(install_height_float, INSTALL_HEIGHT, 7);
-      this->install_height_select_->publish_state(INSTALL_HEIGHT_STR[select_index_]);
-
-      this->current_height_threshold_int_ =
-          (static_cast<uint32_t>(current_data_buf[7]) << 24) | (static_cast<uint32_t>(current_data_buf[6]) << 16) |
-          (static_cast<uint32_t>(current_data_buf[5]) << 8) | static_cast<uint32_t>(current_data_buf[4]);
-      float height_threshold_float;
-      memcpy(&height_threshold_float, &current_height_threshold_int_, sizeof(float));
-      select_index_ = find_nearest_index(height_threshold_float, HEIGHT_THRESHOLD, 7);
-      this->height_threshold_select_->publish_state(HEIGHT_THRESHOLD_STR[select_index_]);
-
-      this->current_sensitivity_ =
-          (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
-          (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
-      select_index_ = find_nearest_index(this->current_sensitivity_, SENSITIVITY, 3);
-      this->sensitivity_select_->publish_state(SENSITIVITY_STR[select_index_]);
-
-      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %lu", install_height_float,
-               height_threshold_float, this->current_sensitivity_);
-      this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
     case RUSULT_HEIGHT_THRESHOLD:
       if (this->current_data_buf[0]) {
@@ -332,6 +283,43 @@ void MR60FDA2Component::processFrame() {
         ESP_LOGD(TAG, "Failed to set the sensitivity");
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
+      break;
+    case RUSULT_PARAMETERS:
+      // ESP_LOGD(
+      //     TAG,
+      //     "GET CURRENT_FRAME: 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x",
+      //     this->current_frame_buf[8], this->current_frame_buf[9], this->current_frame_buf[10],
+      //     this->current_frame_buf[11], this->current_frame_buf[12], this->current_frame_buf[13],
+      //     this->current_frame_buf[14], this->current_frame_buf[15], this->current_frame_buf[16],
+      //     this->current_frame_buf[17], this->current_frame_buf[18], this->current_frame_buf[19]);
+      // ESP_LOGD(
+      //     TAG,
+      //     "GET CURRENT_FRAME_2: 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x",
+      //     this->current_data_buf[0], this->current_data_buf[1], this->current_data_buf[2], this->current_data_buf[3],
+      //     this->current_data_buf[4], this->current_data_buf[5], this->current_data_buf[6], this->current_data_buf[7],
+      //     this->current_data_buf[8], this->current_data_buf[9], this->current_data_buf[10], this->current_data_buf[11]);
+      this->current_install_height_int_ =
+          (static_cast<uint32_t>(current_data_buf[3]) << 24) | (static_cast<uint32_t>(current_data_buf[2]) << 16) |
+          (static_cast<uint32_t>(current_data_buf[1]) << 8) | static_cast<uint32_t>(current_data_buf[0]);
+      float install_height_float;
+      memcpy(&install_height_float, &current_install_height_int_, sizeof(float));
+      select_index_ = find_nearest_index(install_height_float, INSTALL_HEIGHT, 7);
+      this->install_height_select_->publish_state(INSTALL_HEIGHT_STR[select_index_]);
+      this->current_height_threshold_int_ =
+          (static_cast<uint32_t>(current_data_buf[7]) << 24) | (static_cast<uint32_t>(current_data_buf[6]) << 16) |
+          (static_cast<uint32_t>(current_data_buf[5]) << 8) | static_cast<uint32_t>(current_data_buf[4]);
+      float height_threshold_float;
+      memcpy(&height_threshold_float, &current_height_threshold_int_, sizeof(float));
+      select_index_ = find_nearest_index(height_threshold_float, HEIGHT_THRESHOLD, 7);
+      this->height_threshold_select_->publish_state(HEIGHT_THRESHOLD_STR[select_index_]);
+      this->current_sensitivity_ =
+          (static_cast<uint32_t>(current_data_buf[11]) << 24) | (static_cast<uint32_t>(current_data_buf[10]) << 16) |
+          (static_cast<uint32_t>(current_data_buf[9]) << 8) | static_cast<uint32_t>(current_data_buf[8]);
+      select_index_ = find_nearest_index(this->current_sensitivity_, SENSITIVITY, 3);
+      this->sensitivity_select_->publish_state(SENSITIVITY_STR[select_index_]);
+      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %lu", install_height_float,
+               height_threshold_float, this->current_sensitivity_);
+      this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
     default:
       break;
@@ -449,6 +437,7 @@ void MR60FDA2Component::reset_radar() {
   this->send_query_(send_data, send_data_len);
   ESP_LOGD(TAG, "SEND RESET: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", send_data[0], send_data[1],
            send_data[2], send_data[3], send_data[4], send_data[5], send_data[6], send_data[7]);
+  this->get_radar_parameters();
 }
 
 }  // namespace seeed_mr60fda2
