@@ -311,7 +311,7 @@ void MR60FDA2Component::processFrame() {
       select_index_ = find_nearest_index(this->current_sensitivity_, SENSITIVITY, 3);
       this->sensitivity_select_->publish_state(SENSITIVITY_STR[select_index_]);
 
-      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %lu", install_height_float,
+      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %.2f", install_height_float,
                height_threshold_float, this->current_sensitivity_);
       this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
