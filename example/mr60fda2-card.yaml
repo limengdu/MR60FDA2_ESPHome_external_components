@@ -7,25 +7,38 @@ views:
       - type: grid
         cards:
           - type: tile
-            entity: button.esp32c6_test_get_radar_parameters
+            entity: button.seeed_mr60fda2_reset
+            name: Reset
+            color: red
+            layout_options:
+              grid_columns: 4
+              grid_rows: 1
+          - type: tile
+            entity: light.seeed_mr60fda2_seeed_mr60fda2_rgb_light
+            name: Seeed MR60FDA2 RGB Light
+            color: green
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: button.seeed_mr60fda2_get_radar_parameters
             layout_options:
               grid_columns: 2
               grid_rows: 1
             name: Get Radar Parameters
             color: brown
           - type: tile
-            entity: button.esp32c6_test_reset
-            name: Reset
-            color: red
+            entity: sensor.seeed_mr60fda2_seeed_mr60fda2_illuminance
+            name: Seeed MR60FDA2 Illuminance
+            color: accent
           - type: tile
-            entity: sensor.esp32c6_test_falling_information
+            entity: sensor.seeed_mr60fda2_falling_information
             layout_options:
               grid_columns: 4
               grid_rows: 1
             name: Falling Information
             color: red
           - type: tile
-            entity: binary_sensor.esp32c6_test_person_information
+            entity: binary_sensor.seeed_mr60fda2_person_information
             layout_options:
               grid_columns: 4
               grid_rows: 1
@@ -34,7 +47,7 @@ views:
           - features:
               - type: select-options
             type: tile
-            entity: select.esp32c6_test_set_sensitivity
+            entity: select.seeed_mr60fda2_set_sensitivity
             layout_options:
               grid_columns: 4
               grid_rows: 1
@@ -42,7 +55,7 @@ views:
           - features:
               - type: select-options
             type: tile
-            entity: select.esp32c6_test_set_install_height
+            entity: select.seeed_mr60fda2_set_install_height
             layout_options:
               grid_columns: 4
               grid_rows: 1
@@ -50,7 +63,7 @@ views:
           - features:
               - type: select-options
             type: tile
-            entity: select.esp32c6_test_set_height_threshold
+            entity: select.seeed_mr60fda2_set_height_threshold
             layout_options:
               grid_columns: 4
               grid_rows: 1
