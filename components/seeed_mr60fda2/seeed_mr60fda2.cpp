@@ -37,7 +37,7 @@ void MR60FDA2Component::setup() {
   // LOG_PIN("  TX Pin: ", this->pin_tx_);
   // LOG_PIN("  RX Pin: ", this->pin_rx_);
   // this->check_uart_settings(115200);
-  this->pin_tx_->setup();
+  // this->pin_tx_->setup();
   // this->pin_tx_->pin_mode(gpio::FLAG_PULLUP);
   this->pin_tx_->digital_write(1);
 
