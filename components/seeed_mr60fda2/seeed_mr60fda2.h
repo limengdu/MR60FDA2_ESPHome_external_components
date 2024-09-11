@@ -76,6 +76,8 @@ class MR60FDA2Component : public Component,
 #endif
 
  protected:
+  InternalGPIOPin *pin_tx_;
+  InternalGPIOPin *pin_rx_;
   uint8_t current_frame_locate_;
   uint8_t current_frame_buf[FRAME_BUF_MAX_SIZE];
   uint8_t current_data_buf[DATA_BUF_MAX_SIZE];
@@ -99,6 +101,10 @@ class MR60FDA2Component : public Component,
 
  public:
   float get_setup_priority() const override { return esphome::setup_priority::LATE; }
+  void set_pin(InternalGPIOPin *pin_tx, InternalGPIOPin *pin_rx) {
+    pin_tx_ = pin_tx;
+    pin_rx_ = pin_rx;
+  }
   void setup() override;
   void dump_config() override;
   void loop() override;

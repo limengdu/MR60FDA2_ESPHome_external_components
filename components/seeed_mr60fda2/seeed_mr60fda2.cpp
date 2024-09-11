@@ -12,6 +12,8 @@ static const char *const TAG = "seeed_mr60fda2";
 // items in an easy-to-read format, including the configuration key-value pairs.
 void MR60FDA2Component::dump_config() {
   ESP_LOGCONFIG(TAG, "MR60FDA2:");
+  LOG_PIN("  TX Pin: ", this->pin_tx_);
+  LOG_PIN("  RX Pin: ", this->pin_rx_);
 #ifdef USE_BINARY_SENSOR
   LOG_BINARY_SENSOR(" ", "People Exist Binary Sensor", this->people_exist_binary_sensor_);
 #endif
@@ -33,6 +35,8 @@ void MR60FDA2Component::dump_config() {
 void MR60FDA2Component::setup() {
   ESP_LOGCONFIG(TAG, "Setting up MR60FDA2...");
   this->check_uart_settings(115200);
+  // tx_pin->pin_mode(gpio::FLAG_OUTPUT);
+  // tx_pin->digital_write(txoff);
 
   this->current_frame_locate_ = LOCATE_FRAME_HEADER;
   this->current_frame_id_ = 0;
