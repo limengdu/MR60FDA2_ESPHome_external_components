@@ -34,8 +34,8 @@ void MR60FDA2Component::dump_config() {
 // Initialisation functions
 void MR60FDA2Component::setup() {
   ESP_LOGCONFIG(TAG, "Setting up MR60FDA2...");
-  ESP_LOGCONFIG("  TX Pin: ", this->pin_tx_);
-  ESP_LOGCONFIG("  RX Pin: ", this->pin_rx_);
+  LOG_PIN("  TX Pin: ", this->pin_tx_);
+  LOG_PIN("  RX Pin: ", this->pin_rx_);
   this->check_uart_settings(115200);
   this->pin_tx_->pin_mode(gpio::FLAG_OUTPUT);
   this->pin_tx_->digital_write(0);
