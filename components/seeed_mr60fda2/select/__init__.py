@@ -1,11 +1,12 @@
 import esphome.codegen as cg
 from esphome.components import select
 import esphome.config_validation as cv
-from esphome.const import (
-    ENTITY_CATEGORY_CONFIG,
-    CONF_SENSITIVITY,
-)
+from esphome.const import CONF_SENSITIVITY, ENTITY_CATEGORY_CONFIG, ICON_ACCELERATION_Z
+
 from .. import CONF_MR60FDA2_ID, MR60FDA2Component, mr60fda2_ns
+
+
+DEPENDENCIES = ["seeed_mr60fda2"]
 
 InstallHeightSelect = mr60fda2_ns.class_("InstallHeightSelect", select.Select)
 HeightThresholdSelect = mr60fda2_ns.class_("HeightThresholdSelect", select.Select)
@@ -19,12 +20,12 @@ CONFIG_SCHEMA = {
     cv.Optional(CONF_INSTALL_HEIGHT): select.select_schema(
         InstallHeightSelect,
         entity_category=ENTITY_CATEGORY_CONFIG,
-        icon="mdi:axis-z-arrow",
+        icon=ICON_ACCELERATION_Z,
     ),
     cv.Optional(CONF_HEIGHT_THRESHOLD): select.select_schema(
         HeightThresholdSelect,
         entity_category=ENTITY_CATEGORY_CONFIG,
-        icon="mdi:axis-z-arrow",
+        icon=ICON_ACCELERATION_Z,
     ),
     cv.Optional(CONF_SENSITIVITY): select.select_schema(
         SensitivitySelect,

@@ -1,6 +1,7 @@
-#include "esphome/core/log.h"
 #include "seeed_mr60fda2.h"
+#include "esphome/core/log.h"
 
+#include <cinttypes>
 #include <utility>
 
 namespace esphome {
@@ -14,18 +15,16 @@ void MR60FDA2Component::dump_config() {
   ESP_LOGCONFIG(TAG, "MR60FDA2:");
 #ifdef USE_BINARY_SENSOR
   LOG_BINARY_SENSOR(" ", "People Exist Binary Sensor", this->people_exist_binary_sensor_);
+  LOG_BINARY_SENSOR(" ", "Is Fall Binary Sensor", this->fall_detected_binary_sensor_);
 #endif
 #ifdef USE_BUTTON
   LOG_BUTTON(" ", "Get Radar Parameters Button", this->get_radar_parameters_button_);
-  LOG_BUTTON(" ", "Reset Radar Button", this->reset_radar_button_);
+  LOG_BUTTON(" ", "Reset Radar Button", this->factory_reset_button_);
 #endif
 #ifdef USE_SELECT
   LOG_SELECT(" ", "Install Height Select", this->install_height_select_);
   LOG_SELECT(" ", "Height Threshold Select", this->height_threshold_select_);
   LOG_SELECT(" ", "Sensitivity Select", this->sensitivity_select_);
-#endif
-#ifdef USE_TEXT_SENSOR
-  LOG_TEXT_SENSOR(" ", "Is Fall Text Sensor", this->is_fall_text_sensor_);
 #endif
 }
 
@@ -39,11 +38,6 @@ void MR60FDA2Component::setup() {
   this->current_frame_len_ = 0;
   this->current_data_frame_len_ = 0;
   this->current_frame_type_ = 0;
-  this->current_install_height_int_ = 0;
-  this->current_height_threshold_int_ = 0;
-  this->current_sensitivity_ = 0;
-  this->select_index_ = 0;
-
   this->get_radar_parameters();
 
   memset(this->current_frame_buf_, 0, FRAME_BUF_MAX_SIZE);
@@ -73,7 +67,7 @@ void MR60FDA2Component::loop() {
  * @param len The length of the byte array.
  * @return The calculated checksum.
  */
-uint8_t MR60FDA2Component::calculate_checksum_(const uint8_t *data, size_t len) {
+static uint8_t calculate_checksum(const uint8_t *data, size_t len) {
   uint8_t checksum = 0;
   for (size_t i = 0; i < len; i++) {
     checksum ^= data[i];
@@ -93,11 +87,11 @@ uint8_t MR60FDA2Component::calculate_checksum_(const uint8_t *data, size_t len) 
  * @param expected_checksum The expected checksum.
  * @return True if the checksum is valid, false otherwise.
  */
-bool MR60FDA2Component::validate_checksum_(const uint8_t *data, size_t len, uint8_t expected_checksum) {
-  return calculate_checksum_(data, len) == expected_checksum;
+static bool validate_checksum(const uint8_t *data, size_t len, uint8_t expected_checksum) {
+  return calculate_checksum(data, len) == expected_checksum;
 }
 
-uint8_t MR60FDA2Component::find_nearest_index_(float value, const float *arr, int size) {
+static uint8_t find_nearest_index(float value, const float *arr, int size) {
   int nearest_index = 0;
   float min_diff = std::abs(value - arr[0]);
   for (int i = 1; i < size; ++i) {
@@ -108,6 +102,39 @@ uint8_t MR60FDA2Component::find_nearest_index_(float value, const float *arr, in
     }
   }
   return nearest_index;
+}
+
+/**
+ * @brief Convert a float value to a byte array.
+ *
+ * This function converts a float value to a byte array.
+ *
+ * @param value The float value to convert.
+ * @param bytes The byte array to store the converted value.
+ */
+static void float_to_bytes(float value, unsigned char *bytes) {
+  union {
+    float float_value;
+    unsigned char byte_array[4];
+  } u;
+
+  u.float_value = value;
+  memcpy(bytes, u.byte_array, 4);
+}
+
+/**
+ * @brief Convert a 32-bit unsigned integer to a byte array.
+ *
+ * This function converts a 32-bit unsigned integer to a byte array.
+ *
+ * @param value The 32-bit unsigned integer to convert.
+ * @param bytes The byte array to store the converted value.
+ */
+static void int_to_bytes(uint32_t value, unsigned char *bytes) {
+  bytes[0] = value & 0xFF;
+  bytes[1] = (value >> 8) & 0xFF;
+  bytes[2] = (value >> 16) & 0xFF;
+  bytes[3] = (value >> 24) & 0xFF;
 }
 
 void MR60FDA2Component::split_frame_(uint8_t buffer) {
@@ -138,17 +165,12 @@ void MR60FDA2Component::split_frame_(uint8_t buffer) {
         this->current_frame_buf_[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
       } else {
-        // ESP_LOGD(TAG, "DATA_FRAME_LEN_H: 0x%02x", buffer);
-        // ESP_LOGD(TAG, "CURRENT_FRAME_LEN_H: 0x%04x", this->current_data_frame_len_);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
     case LOCATE_LENGTH_FRAME_L:
       this->current_data_frame_len_ += buffer;
       if (this->current_data_frame_len_ > DATA_BUF_MAX_SIZE) {
-        // ESP_LOGD(TAG, "DATA_FRAME_LEN_L: 0x%02x", buffer);
-        // ESP_LOGD(TAG, "CURRENT_FRAME_LEN: 0x%04x", this->current_data_frame_len_);
-        // ESP_LOGD(TAG, "DATA_FRAME_LEN ERROR: %d", this->current_data_frame_len_);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       } else {
         this->current_frame_len_++;
@@ -161,44 +183,30 @@ void MR60FDA2Component::split_frame_(uint8_t buffer) {
       this->current_frame_len_++;
       this->current_frame_buf_[this->current_frame_len_ - 1] = buffer;
       this->current_frame_locate_++;
-      // ESP_LOGD(TAG, "GET LOCATE_TYPE_FRAME1: 0x%02x", this->current_frame_buf_[this->current_frame_len_ - 1]);
       break;
     case LOCATE_TYPE_FRAME2:
       this->current_frame_type_ += buffer;
       if ((this->current_frame_type_ == IS_FALL_TYPE_BUFFER) ||
           (this->current_frame_type_ == PEOPLE_EXIST_TYPE_BUFFER) ||
-          (this->current_frame_type_ == RUSULT_INSTALL_HEIGHT) || (this->current_frame_type_ == RUSULT_PARAMETERS) ||
-          (this->current_frame_type_ == RUSULT_HEIGHT_THRESHOLD) || (this->current_frame_type_ == RUSULT_SENSITIVITY)) {
+          (this->current_frame_type_ == RESULT_INSTALL_HEIGHT) || (this->current_frame_type_ == RESULT_PARAMETERS) ||
+          (this->current_frame_type_ == RESULT_HEIGHT_THRESHOLD) || (this->current_frame_type_ == RESULT_SENSITIVITY)) {
         this->current_frame_len_++;
         this->current_frame_buf_[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
-        // ESP_LOGD(TAG, "GET CURRENT_FRAME_TYPE: 0x%02x 0x%02x", this->current_frame_buf_[this->current_frame_len_ -
-        // 2],
-        //          this->current_frame_buf_[this->current_frame_len_ - 1]);
       } else {
-        // ESP_LOGD(TAG, "CURRENT_FRAME_TYPE NOT FOUND: 0x%02x 0x%02x",
-        //          this->current_frame_buf_[this->current_frame_len_ - 2],
-        //          this->current_frame_buf_[this->current_frame_len_ - 1]);
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
     case LOCATE_HEAD_CKSUM_FRAME:
-      if (this->validate_checksum_(this->current_frame_buf_, this->current_frame_len_, buffer)) {
+      if (validate_checksum(this->current_frame_buf_, this->current_frame_len_, buffer)) {
         this->current_frame_len_++;
         this->current_frame_buf_[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
       } else {
         ESP_LOGD(TAG, "HEAD_CKSUM_FRAME ERROR: 0x%02x", buffer);
-        ESP_LOGD(TAG, "GET CURRENT_FRAME: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-                 this->current_frame_buf_[this->current_frame_len_ - 9],
-                 this->current_frame_buf_[this->current_frame_len_ - 8],
-                 this->current_frame_buf_[this->current_frame_len_ - 7],
-                 this->current_frame_buf_[this->current_frame_len_ - 6],
-                 this->current_frame_buf_[this->current_frame_len_ - 5],
-                 this->current_frame_buf_[this->current_frame_len_ - 4],
-                 this->current_frame_buf_[this->current_frame_len_ - 3],
-                 this->current_frame_buf_[this->current_frame_len_ - 2],
-                 this->current_frame_buf_[this->current_frame_len_ - 1], buffer);
+        ESP_LOGV(TAG, "CURRENT_FRAME: %s %s",
+                 format_hex_pretty(this->current_frame_buf_, this->current_frame_len_).c_str(),
+                 format_hex_pretty(&buffer, 1).c_str());
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -215,23 +223,17 @@ void MR60FDA2Component::split_frame_(uint8_t buffer) {
       }
       break;
     case LOCATE_DATA_CKSUM_FRAME:
-      if (this->validate_checksum_(this->current_data_buf_, this->current_data_frame_len_, buffer)) {
+      if (validate_checksum(this->current_data_buf_, this->current_data_frame_len_, buffer)) {
         this->current_frame_len_++;
         this->current_frame_buf_[this->current_frame_len_ - 1] = buffer;
         this->current_frame_locate_++;
         this->process_frame_();
       } else {
         ESP_LOGD(TAG, "DATA_CKSUM_FRAME ERROR: 0x%02x", buffer);
-        ESP_LOGD(TAG, "GET CURRENT_FRAME: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-                 this->current_frame_buf_[this->current_frame_len_ - 9],
-                 this->current_frame_buf_[this->current_frame_len_ - 8],
-                 this->current_frame_buf_[this->current_frame_len_ - 7],
-                 this->current_frame_buf_[this->current_frame_len_ - 6],
-                 this->current_frame_buf_[this->current_frame_len_ - 5],
-                 this->current_frame_buf_[this->current_frame_len_ - 4],
-                 this->current_frame_buf_[this->current_frame_len_ - 3],
-                 this->current_frame_buf_[this->current_frame_len_ - 2],
-                 this->current_frame_buf_[this->current_frame_len_ - 1], buffer);
+        ESP_LOGV(TAG, "GET CURRENT_FRAME: %s %s",
+                 format_hex_pretty(this->current_frame_buf_, this->current_frame_len_).c_str(),
+                 format_hex_pretty(&buffer, 1).c_str());
+
         this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
@@ -243,21 +245,19 @@ void MR60FDA2Component::split_frame_(uint8_t buffer) {
 void MR60FDA2Component::process_frame_() {
   switch (this->current_frame_type_) {
     case IS_FALL_TYPE_BUFFER:
-      if (this->is_fall_text_sensor_ != nullptr) {
-        if (this->current_frame_buf_[LEN_TO_HEAD_CKSUM] == 0) {
-          this->is_fall_text_sensor_->publish_state("Normal");
-        } else if (this->current_frame_buf_[LEN_TO_HEAD_CKSUM] == 1) {
-          this->is_fall_text_sensor_->publish_state("Falling");
-        }
+      if (this->fall_detected_binary_sensor_ != nullptr) {
+        this->fall_detected_binary_sensor_->publish_state(this->current_frame_buf_[LEN_TO_HEAD_CKSUM]);
       }
       this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
+
     case PEOPLE_EXIST_TYPE_BUFFER:
       if (this->people_exist_binary_sensor_ != nullptr)
         this->people_exist_binary_sensor_->publish_state(this->current_frame_buf_[LEN_TO_HEAD_CKSUM]);
       this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
-    case RUSULT_INSTALL_HEIGHT:
+
+    case RESULT_INSTALL_HEIGHT:
       if (this->current_data_buf_[0]) {
         ESP_LOGD(TAG, "Successfully set the mounting height");
       } else {
@@ -265,7 +265,8 @@ void MR60FDA2Component::process_frame_() {
       }
       this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
-    case RUSULT_HEIGHT_THRESHOLD:
+
+    case RESULT_HEIGHT_THRESHOLD:
       if (this->current_data_buf_[0]) {
         ESP_LOGD(TAG, "Successfully set the height threshold");
       } else {
@@ -273,7 +274,8 @@ void MR60FDA2Component::process_frame_() {
       }
       this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
-    case RUSULT_SENSITIVITY:
+
+    case RESULT_SENSITIVITY:
       if (this->current_data_buf_[0]) {
         ESP_LOGD(TAG, "Successfully set the sensitivity");
       } else {
@@ -281,155 +283,84 @@ void MR60FDA2Component::process_frame_() {
       }
       this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
-    case RUSULT_PARAMETERS:
-      // ESP_LOGD(
-      //     TAG,
-      //     "GET CURRENT_FRAME: 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x",
-      //     this->current_frame_buf_[8], this->current_frame_buf_[9], this->current_frame_buf_[10],
-      //     this->current_frame_buf_[11], this->current_frame_buf_[12], this->current_frame_buf_[13],
-      //     this->current_frame_buf_[14], this->current_frame_buf_[15], this->current_frame_buf_[16],
-      //     this->current_frame_buf_[17], this->current_frame_buf_[18], this->current_frame_buf_[19]);
-      // ESP_LOGD(
-      //     TAG,
-      //     "GET CURRENT_FRAME_2: 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x 0x%02x, 0x%02x 0x%02x 0x%02x
-      //     0x%02x", this->current_data_buf_[0], this->current_data_buf_[1], this->current_data_buf_[2],
-      //     this->current_data_buf_[3], this->current_data_buf_[4], this->current_data_buf_[5],
-      //     this->current_data_buf_[6], this->current_data_buf_[7], this->current_data_buf_[8],
-      //     this->current_data_buf_[9], this->current_data_buf_[10], this->current_data_buf_[11]);
-      this->current_install_height_int_ =
-          (static_cast<uint32_t>(current_data_buf_[3]) << 24) | (static_cast<uint32_t>(current_data_buf_[2]) << 16) |
-          (static_cast<uint32_t>(current_data_buf_[1]) << 8) | static_cast<uint32_t>(current_data_buf_[0]);
-      float install_height_float;
-      memcpy(&install_height_float, &current_install_height_int_, sizeof(float));
-      select_index_ = find_nearest_index_(install_height_float, INSTALL_HEIGHT, 7);
-      this->install_height_select_->publish_state(INSTALL_HEIGHT_STR[select_index_]);
-      this->current_height_threshold_int_ =
-          (static_cast<uint32_t>(current_data_buf_[7]) << 24) | (static_cast<uint32_t>(current_data_buf_[6]) << 16) |
-          (static_cast<uint32_t>(current_data_buf_[5]) << 8) | static_cast<uint32_t>(current_data_buf_[4]);
-      float height_threshold_float;
-      memcpy(&height_threshold_float, &current_height_threshold_int_, sizeof(float));
-      select_index_ = find_nearest_index_(height_threshold_float, HEIGHT_THRESHOLD, 7);
-      this->height_threshold_select_->publish_state(HEIGHT_THRESHOLD_STR[select_index_]);
-      this->current_sensitivity_ =
-          (static_cast<uint32_t>(current_data_buf_[11]) << 24) | (static_cast<uint32_t>(current_data_buf_[10]) << 16) |
-          (static_cast<uint32_t>(current_data_buf_[9]) << 8) | static_cast<uint32_t>(current_data_buf_[8]);
-      select_index_ = find_nearest_index_(this->current_sensitivity_, SENSITIVITY, 3);
-      this->sensitivity_select_->publish_state(SENSITIVITY_STR[select_index_]);
-      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %u", install_height_float,
-               height_threshold_float, this->current_sensitivity_);
+
+    case RESULT_PARAMETERS: {
+      float install_height_float = 0;
+      float height_threshold_float = 0;
+      uint32_t current_sensitivity = 0;
+      if (this->install_height_select_ != nullptr) {
+        uint32_t current_install_height_int =
+            encode_uint32(current_data_buf_[3], current_data_buf_[2], current_data_buf_[1], current_data_buf_[0]);
+
+        install_height_float = bit_cast<float>(current_install_height_int);
+        uint32_t select_index = find_nearest_index(install_height_float, INSTALL_HEIGHT, 7);
+        this->install_height_select_->publish_state(this->install_height_select_->at(select_index).value());
+      }
+
+      if (this->height_threshold_select_ != nullptr) {
+        uint32_t current_height_threshold_int =
+            encode_uint32(current_data_buf_[7], current_data_buf_[6], current_data_buf_[5], current_data_buf_[4]);
+
+        height_threshold_float = bit_cast<float>(current_height_threshold_int);
+        size_t select_index = find_nearest_index(height_threshold_float, HEIGHT_THRESHOLD, 7);
+        this->height_threshold_select_->publish_state(this->height_threshold_select_->at(select_index).value());
+      }
+
+      if (this->sensitivity_select_ != nullptr) {
+        current_sensitivity =
+            encode_uint32(current_data_buf_[11], current_data_buf_[10], current_data_buf_[9], current_data_buf_[8]);
+
+        uint32_t select_index = find_nearest_index(current_sensitivity, SENSITIVITY, 3);
+        this->sensitivity_select_->publish_state(this->sensitivity_select_->at(select_index).value());
+      }
+
+      ESP_LOGD(TAG, "Mounting height: %.2f, Height threshold: %.2f, Sensitivity: %" PRIu32, install_height_float,
+               height_threshold_float, current_sensitivity);
       this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
+    }
     default:
       break;
   }
 }
 
-// Sending data frames
-void MR60FDA2Component::send_query_(uint8_t *query, size_t string_length) { this->write_array(query, string_length); }
-
-/**
- * @brief Convert a float value to a byte array.
- *
- * This function converts a float value to a byte array.
- *
- * @param value The float value to convert.
- * @param bytes The byte array to store the converted value.
- */
-void MR60FDA2Component::float_to_bytes_(float value, unsigned char *bytes) {
-  union {
-    float float_value;
-    unsigned char byte_array[4];
-  } u;
-
-  u.float_value = value;
-  memcpy(bytes, u.byte_array, 4);
-}
-
-/**
- * @brief Convert a 32-bit unsigned integer to a byte array.
- *
- * This function converts a 32-bit unsigned integer to a byte array.
- *
- * @param value The 32-bit unsigned integer to convert.
- * @param bytes The byte array to store the converted value.
- */
-void MR60FDA2Component::int_to_bytes_(uint32_t value, unsigned char *bytes) {
-  bytes[0] = value & 0xFF;
-  bytes[1] = (value >> 8) & 0xFF;
-  bytes[2] = (value >> 16) & 0xFF;
-  bytes[3] = (value >> 24) & 0xFF;
-}
-
 // Send Heartbeat Packet Command
 void MR60FDA2Component::set_install_height(uint8_t index) {
   uint8_t send_data[13] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x04, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00};
-
-  float_to_bytes_(INSTALL_HEIGHT[index], &send_data[8]);
-
-  for (int i = 0; i < 4; i++) {
-    data_frame[i] = send_data[i + 8];
-  }
-
-  send_data[12] = calculate_checksum_(data_frame, 4);
-  this->send_query_(send_data, 13);
-  ESP_LOGD(TAG,
-           "SEND INSTALL HEIGHT FRAME: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
-           "0x%02x 0x%02x",
-           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
-           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
+  float_to_bytes(INSTALL_HEIGHT[index], &send_data[8]);
+  send_data[12] = calculate_checksum(send_data + 8, 4);
+  this->write_array(send_data, 13);
+  ESP_LOGV(TAG, "SEND INSTALL HEIGHT FRAME: %s", format_hex_pretty(send_data, 13).c_str());
 }
 
 void MR60FDA2Component::set_height_threshold(uint8_t index) {
   uint8_t send_data[13] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x08, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00};
-
-  float_to_bytes_(HEIGHT_THRESHOLD[index], &send_data[8]);
-
-  for (int i = 0; i < 4; i++) {
-    data_frame[i] = send_data[i + 8];
-  }
-
-  send_data[12] = calculate_checksum_(data_frame, 4);
-  this->send_query_(send_data, 13);
-  ESP_LOGD(TAG,
-           "SEND HEIGHT THRESHOLD: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
-           "0x%02x 0x%02x",
-           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
-           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
+  float_to_bytes(INSTALL_HEIGHT[index], &send_data[8]);
+  send_data[12] = calculate_checksum(send_data + 8, 4);
+  this->write_array(send_data, 13);
+  ESP_LOGV(TAG, "SEND HEIGHT THRESHOLD: %s", format_hex_pretty(send_data, 13).c_str());
 }
 
 void MR60FDA2Component::set_sensitivity(uint8_t index) {
   uint8_t send_data[13] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x0A, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t data_frame[4] = {0x00, 0x00, 0x00, 0x00};
 
-  int_to_bytes_(SENSITIVITY[index], &send_data[8]);
+  int_to_bytes(SENSITIVITY[index], &send_data[8]);
 
-  for (int i = 0; i < 4; i++) {
-    data_frame[i] = send_data[i + 8];
-  }
-
-  send_data[12] = calculate_checksum_(data_frame, 4);
-  this->send_query_(send_data, 13);
-  ESP_LOGD(TAG,
-           "SEND SET SENSITIVITY: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x "
-           "0x%02x 0x%02x",
-           send_data[0], send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6],
-           send_data[7], send_data[8], send_data[9], send_data[10], send_data[11], send_data[12]);
+  send_data[12] = calculate_checksum(send_data + 8, 4);
+  this->write_array(send_data, 13);
+  ESP_LOGV(TAG, "SEND SET SENSITIVITY: %s", format_hex_pretty(send_data, 13).c_str());
 }
 
 void MR60FDA2Component::get_radar_parameters() {
   uint8_t send_data[8] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x06, 0xF6};
-  this->send_query_(send_data, 8);
-  ESP_LOGD(TAG, "SEND GET PARAMETERS: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", send_data[0],
-           send_data[1], send_data[2], send_data[3], send_data[4], send_data[5], send_data[6], send_data[7]);
+  this->write_array(send_data, 8);
+  ESP_LOGV(TAG, "SEND GET PARAMETERS: %s", format_hex_pretty(send_data, 8).c_str());
 }
 
-void MR60FDA2Component::reset_radar() {
+void MR60FDA2Component::factory_reset() {
   uint8_t send_data[8] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x21, 0x10, 0xCF};
-  this->send_query_(send_data, 8);
-  ESP_LOGD(TAG, "SEND RESET: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", send_data[0], send_data[1],
-           send_data[2], send_data[3], send_data[4], send_data[5], send_data[6], send_data[7]);
+  this->write_array(send_data, 8);
+  ESP_LOGV(TAG, "SEND RESET: %s", format_hex_pretty(send_data, 8).c_str());
   this->get_radar_parameters();
 }
 
