@@ -2,7 +2,7 @@
 
 The MR60FDA2 is a 60GHz mmWave Fall Detection Sensor module designed for integration with the XIAO ESP32C6 microcontroller. This advanced sensor utilizes millimeter-wave technology to provide non-invasive monitoring of vital signs and presence detection.
 
-This guide aims to provide a clear and comprehensive walkthrough for integrating the MR60FDA2 mmWave Sensor with Home Assistant using the XIAO ESP32C6 microcontroller. This Home Assistant integration empowers users to enhance their smart home systems with advanced sensing capabilities, enabling automated responses and real-time monitoring for various applications(e.g., fall detection for elderly care, security applications).
+This guide aims to provide a clear and comprehensive walkthrough for integrating the MR60FDA2 mmWave Sensor with Home Assistant using the [Seeed Studio XIAO ESP32C6 microcontroller](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html). This Home Assistant integration empowers users to enhance their smart home systems with advanced sensing capabilities, enabling automated responses and real-time monitoring for various applications(e.g., fall detection for elderly care, security applications).
 
 <div><img src="https://files.seeedstudio.com/wiki/mmwave-for-xiao/mr60/mr60fda2/ha-sensor-light-on.jpg" style={{"border-radius": '6px'}}/></div>
 
