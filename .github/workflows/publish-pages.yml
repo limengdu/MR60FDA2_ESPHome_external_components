@@ -16,6 +16,7 @@ on:
     paths:
       - 'static/**'
       - '.github/workflows/publish-pages.yml'
+      - 'example/mr60fda2.yaml'
 
 
 concurrency:
