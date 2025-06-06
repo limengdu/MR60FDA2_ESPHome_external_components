@@ -24,9 +24,9 @@ jobs:
           - stable
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4
       - name: ESPHome ${{ matrix.esphome-version }}
-        uses: esphome/build-action@v4.0.3
+        uses: esphome/build-action@v7
         with:
           yaml-file: example/mr60fda2.yaml
           version: ${{ matrix.esphome-version }}
