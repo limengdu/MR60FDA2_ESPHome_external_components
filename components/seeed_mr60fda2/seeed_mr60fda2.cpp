@@ -211,15 +211,16 @@ void MR60FDA2Component::split_frame_(uint8_t buffer) {
       }
       break;
     case LOCATE_DATA_FRAME:
+      if (this->current_frame_len_ >= FRAME_BUF_MAX_SIZE) {
+        ESP_LOGD(TAG, "PRACTICE_DATA_FRAME_LEN ERROR: %d", this->current_frame_len_ - LEN_TO_HEAD_CKSUM);
+        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
+        break;
+      }
       this->current_frame_len_++;
       this->current_frame_buf_[this->current_frame_len_ - 1] = buffer;
       this->current_data_buf_[this->current_frame_len_ - LEN_TO_DATA_FRAME] = buffer;
       if (this->current_frame_len_ - LEN_TO_HEAD_CKSUM == this->current_data_frame_len_) {
         this->current_frame_locate_++;
-      }
-      if (this->current_frame_len_ > FRAME_BUF_MAX_SIZE) {
-        ESP_LOGD(TAG, "PRACTICE_DATA_FRAME_LEN ERROR: %d", this->current_frame_len_ - LEN_TO_HEAD_CKSUM);
-        this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       }
       break;
     case LOCATE_DATA_CKSUM_FRAME:
@@ -238,6 +239,7 @@ void MR60FDA2Component::split_frame_(uint8_t buffer) {
       }
       break;
     default:
+      this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
   }
 }
@@ -320,12 +322,16 @@ void MR60FDA2Component::process_frame_() {
       break;
     }
     default:
+      this->current_frame_locate_ = LOCATE_FRAME_HEADER;
       break;
   }
 }
 
 // Send Heartbeat Packet Command
 void MR60FDA2Component::set_install_height(uint8_t index) {
+  if (index >= sizeof(INSTALL_HEIGHT) / sizeof(INSTALL_HEIGHT[0])) {
+    return;
+  }
   uint8_t send_data[13] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x04, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00};
   float_to_bytes(INSTALL_HEIGHT[index], &send_data[8]);
   send_data[12] = calculate_checksum(send_data + 8, 4);
@@ -334,6 +340,9 @@ void MR60FDA2Component::set_install_height(uint8_t index) {
 }
 
 void MR60FDA2Component::set_height_threshold(uint8_t index) {
+  if (index >= sizeof(HEIGHT_THRESHOLD) / sizeof(HEIGHT_THRESHOLD[0])) {
+    return;
+  }
   uint8_t send_data[13] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x08, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00};
   float_to_bytes(HEIGHT_THRESHOLD[index], &send_data[8]);
   send_data[12] = calculate_checksum(send_data + 8, 4);
@@ -342,6 +351,9 @@ void MR60FDA2Component::set_height_threshold(uint8_t index) {
 }
 
 void MR60FDA2Component::set_sensitivity(uint8_t index) {
+  if (index >= sizeof(SENSITIVITY) / sizeof(SENSITIVITY[0])) {
+    return;
+  }
   uint8_t send_data[13] = {0x01, 0x00, 0x00, 0x00, 0x04, 0x0E, 0x0A, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00};
 
   int_to_bytes(SENSITIVITY[index], &send_data[8]);

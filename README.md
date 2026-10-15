@@ -1,6 +1,6 @@
 ## Introduction {#introduction}
 
-The MR60FDA2 is a 60GHz mmWave Fall Detection Sensor module designed for integration with the XIAO ESP32C6 microcontroller. This advanced sensor utilizes millimeter-wave technology to provide non-invasive monitoring of vital signs and presence detection.
+The MR60FDA2 is a 60GHz mmWave Fall Detection Sensor module designed for integration with the XIAO ESP32C6 microcontroller. This advanced sensor utilizes millimeter-wave technology to provide non-invasive fall detection and presence sensing.
 
 This guide aims to provide a clear and comprehensive walkthrough for integrating the MR60FDA2 mmWave Sensor with Home Assistant using the [Seeed Studio XIAO ESP32C6 microcontroller](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html). This Home Assistant integration empowers users to enhance their smart home systems with advanced sensing capabilities, enabling automated responses and real-time monitoring for various applications(e.g., fall detection for elderly care, security applications).
 
@@ -31,7 +31,7 @@ This guide aims to provide a clear and comprehensive walkthrough for integrating
 To effectively integrate the MR60FDA2 mmWave Sensor with Home Assistant using the XIAO ESP32C6, follow these essential steps:
 
 1. **[Set Up Home Assistant](#setting-up-home-assistant)**: Begin by installing and configuring Home Assistant to manage your smart home devices, ensuring a seamless connection with the sensor.
-2. **[Connect the MR60FDA2 Sensor](#discovering-and-adding-the-device-in-home-assistant)**: Learn how to discover and add the MR60FDA2 Sensor to your Home Assistant setup, enabling real-time monitoring of vital signs.
+2. **[Connect the MR60FDA2 Sensor](#discovering-and-adding-the-device-in-home-assistant)**: Learn how to discover and add the MR60FDA2 Sensor to your Home Assistant setup, enabling real-time fall and presence monitoring.
 3. **[Monitor Sensor Data](#sensor-data-monitoring)**: Once integrated, you can effectively monitor sensor data to check whether or not a fall has occurred.
 4. **[Implement Automation](#implementing-automation-in-home-assistant)**: Explore the powerful automation features of Home Assistant to create responsive actions based on the sensor data, enhancing your smart home environment.
 5. **[Modify Firmware with ESPHome](#modifying-the-firmware-with-esphome)**: Utilize ESPHome to customize the sensor's functionality, tailoring it to meet your specific needs for greater flexibility and control.
@@ -72,7 +72,11 @@ We have also written how to install Home Assistant for some of Seeed Studio prod
 
 ### Step 2: Preparing the Kit
 
-By default, your device (XIAO ESP32C6) comes pre-flashed with firmware for breathing and heart rate detection. However, there are two scenarios where you may need to update the firmware:
+By default, your device (XIAO ESP32C6) comes pre-flashed with firmware for fall detection and presence sensing. Use the current kit YAML in [`example/mr60fda2.yaml`](https://github.com/limengdu/MR60FDA2_ESPHome_external_components/blob/main/example/mr60fda2.yaml) (project version `2.2`). That file is the source of truth for this repository.
+
+This repository is for the **MR60FDA2** fall-detection kit. The **MR60BHA2** breath and heartbeat kit uses [its own repository and YAML](https://github.com/limengdu/MR60BHA2_ESPHome_external_components). Using the BHA2 configuration on an FDA2 leaves Person Information and Falling Information at `Unknown`.
+
+There are two scenarios where you may need to update the firmware:
 
 1. **Re-flashing the Firmware**: If the existing firmware is corrupted or you need to start fresh.
 2. **Upgrading the Firmware**: If there is a newer version of the firmware with improved functionality.
@@ -108,7 +112,19 @@ With either method, you'll have your firmware updated and ready for integration 
 
 #### Connect to the kit's hotspot
 
-With the firmware, you could power on the sensor kit, and a Wi-Fi access point will appear: `seeedstudio-mr60fda2`.
+The factory firmware and the example YAML open a fallback hotspot named `seeedstudio-mr60fda2` when `wifi.ssid` / `wifi.password` are not set. After you power the kit, that access point appears.
+
+To join your home network automatically when you compile from ESPHome, add:
+
+```yaml
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "seeedstudio-mr60fda2"
+```
+
+Those two secret keys live in ESPHome's `secrets.yaml`. Without them, connect to the hotspot and enter the credentials at `192.168.4.1`.
 
 <div style={{textAlign:'center'}}><img src="https://files.seeedstudio.com/wiki/mmwave-for-xiao/mr60/mr60fda2/hotspot-name.jpg" style={{width:360, height:'auto', "border-radius": '15px'}}/></div>
 
@@ -173,7 +189,7 @@ Now that you have successfully integrated the MR60FDA2 mmWave Sensor with the XI
 
 #### Implementing Automation in Home Assistant
 
-Home Assistant's powerful automation features allow you to create a more responsive smart home environment based on the data collected from your MR60FDA2 Sensor. This means you can set up actions that occur automatically based on specific triggers related to motion or heartbeat detection.
+Home Assistant's powerful automation features allow you to create a more responsive smart home environment based on the data collected from your MR60FDA2 Sensor. This means you can set up actions that occur automatically based on specific triggers related to presence or fall detection.
 
 Here's how to implement automations step-by-step:
 
@@ -184,7 +200,7 @@ Here's how to implement automations step-by-step:
 5. **Determine the Action**: Specify what action should occur when the trigger conditions are met. Actions can include turning on lights, sending notifications, or even adjusting thermostat settings. For example, you could create an action that turns on an RGB light when motion is detected, enhancing both security and comfort.
 6. **Save and Test**: After configuring your automation, save it and test its functionality. Walk past the sensor to see if the lights turn on as expected. If any issues arise, you can return to the automation settings to troubleshoot and adjust.
 
-By leveraging Home Assistant's automation capabilities, you can create a truly smart environment that responds to your movements and health metrics, ensuring that your living space adapts to your lifestyle seamlessly.
+By leveraging Home Assistant's automation capabilities, you can create a truly smart environment that responds to presence and fall events, ensuring that your living space adapts to your lifestyle seamlessly.
 
 ## Modifying the Firmware with ESPHome
 
@@ -196,11 +212,17 @@ To get started with ESPHome, follow these steps:
 2. **Create a New Configuration**: Click on the device to open its configuration. Here, you can adjust settings such as the sensor's sensitivity, reporting intervals, and output formats. ESPHome uses a YAML configuration format, which is user-friendly and allows you to define various parameters. You can use the following template YAML file as a starting point for your configuration, which is designed specifically for the MR60FDA2 Sensor:
 
     ```yaml showLineNumbers title=example/mr60fda2.yaml
-    # template from https://github.com/limengdu/MR60FDA2_ESPHome_external_components/blob/main/example/mr60fda2.yaml
-    
+    # Current MR60FDA2 kit configuration (fall detection + presence).
+    # Source of truth: https://github.com/limengdu/MR60FDA2_ESPHome_external_components/blob/main/example/mr60fda2.yaml
+    #
+    # This file is for the MR60FDA2 fall-detection kit. The MR60BHA2 breath and
+    # heartbeat kit uses a different repository and YAML; using that YAML here
+    # leaves Person Information and Falling Information at Unknown.
+
     substitutions:
       name: "seeedstudio-mr60fda2-kit"
       friendly_name: "Seeed Studio MR60FDA2 Kit"
+      seeed_mr60fda2_source: github://limengdu/MR60FDA2_ESPHome_external_components@main
 
     esphome:
       name: "${name}"
@@ -208,7 +230,7 @@ To get started with ESPHome, follow these steps:
       name_add_mac_suffix: true
       project:
         name: "seeedstudio.mr60fda2_kit"
-        version: "1.0"
+        version: "2.2"
       platformio_options:
         board_upload.maximum_size: 4194304
       min_version: "2024.3.2" # Fix logger compile error on ESP32-C6 esphome#6323
@@ -219,28 +241,9 @@ To get started with ESPHome, follow these steps:
       flash_size: 4MB # upload.flash_size
       framework:
         type: esp-idf
-        platform_version: 6.5.0 # Need at least 6.4 for ESP32-C6
-
-        # Tasmota's release of 5.1.3 works, first-party release does not LOL
-        version: 5.1.3
-        source: https://github.com/tasmota/esp-idf/releases/download/v5.1.3.240325/esp-idf-v5.1.3.zip
-
-        # Fix flash size by ensuring IDF flash size is also set (was defaulting to 2MB?!?)
-        # See https://github.com/esphome/issues/issues/5404
-        sdkconfig_options:
-          CONFIG_ESPTOOLPY_FLASHSIZE_4MB: y
 
     external_components:
-      - source:
-          type: git
-          url: https://github.com/ssieb/esphome
-          ref: adc
-        components: [ adc ]
-        refresh: 1min
-      - source:
-          type: git
-          url: https://github.com/limengdu/MR60FDA2_ESPHome_external_components
-          ref: main
+      - source: ${seeed_mr60fda2_source}
         components: [ seeed_mr60fda2 ]
         refresh: 0s
 
@@ -256,7 +259,12 @@ To get started with ESPHome, follow these steps:
       - platform: esphome
 
     wifi:
-      # Enable fallback hotspot (captive portal) in case wifi connection fails
+      # Join a home network at boot by uncommenting the next two lines
+      # (or putting the same keys in secrets.yaml).
+      # ssid: !secret wifi_ssid
+      # password: !secret wifi_password
+      # Without ssid/password the device opens this fallback hotspot so you can
+      # enter credentials at 192.168.4.1.
       ap:
         ssid: "seeedstudio-mr60fda2"
 
@@ -274,7 +282,6 @@ To get started with ESPHome, follow these steps:
         name: "Seeed MR60FDA2 RGB Light"
         pin: GPIO1
         num_leds: 1
-        rmt_channel: 0
         rgb_order: GRB
         chipset: ws2812
 
@@ -325,6 +332,8 @@ To get started with ESPHome, follow these steps:
         sensitivity:
           name: "Set Sensitivity"
     ```
+
+    If Person Information or Falling Information stays `Unknown` after a successful flash, confirm this FDA2 YAML is in use (`seeed_mr60fda2`, project version `2.2`). The BHA2 breath/heartbeat configuration does not publish those entities on this kit. UART must be `115200` 8N1 on RX GPIO17 / TX GPIO16. If the radar still never reports, power the kit from a 5V 2A adapter so the module can start.
 
 3. **Customize Functionality**: You can enhance the sensor's capabilities by exploring various features available in ESPHome, allowing for flexible adjustments to suit your specific needs.
 4. **Upload the Updated Firmware**: After making your modifications, save the configuration. The ESPHome dashboard allows you to upload the firmware directly over the air. Simply click the `Upload` button, and follow the prompts to complete the process. This streamlined method makes it easy to keep your firmware up to date.

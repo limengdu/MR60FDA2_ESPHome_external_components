@@ -3,7 +3,8 @@ name: CI
 on:
   pull_request:
     paths:
-      - 'example/mr60fda2.yaml'
+      - 'components/**'
+      - 'example/**'
       - '.github/workflows/ci.yml'
 
 concurrency:
@@ -25,6 +26,9 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+      - name: Use component sources from this checkout
+        run: |
+          sed -i 's|seeed_mr60fda2_source: github://limengdu/MR60FDA2_ESPHome_external_components@main|seeed_mr60fda2_source: ../components|' example/mr60fda2.yaml
       - name: ESPHome ${{ matrix.esphome-version }}
         uses: esphome/build-action@v7
         with:
