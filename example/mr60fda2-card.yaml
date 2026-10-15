@@ -31,7 +31,7 @@ views:
             name: Seeed MR60FDA2 Illuminance
             color: accent
           - type: tile
-            entity: sensor.seeed_mr60fda2_falling_information
+            entity: binary_sensor.seeed_mr60fda2_falling_information
             layout_options:
               grid_columns: 4
               grid_rows: 1
